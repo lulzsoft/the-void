@@ -66,21 +66,26 @@ export default function SuccessPage() {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // Username availability check (debounced)
+    // Username availability check (real API)
     useEffect(() => {
         if (username.length < 3) {
             setUsernameAvailable(null);
+            setIsCheckingUsername(false);
             return;
         }
 
         setIsCheckingUsername(true);
         const timer = setTimeout(async () => {
-            // Simulated check (replace with actual API call)
-            // await fetch(`/api/check-username?u=${username}`);
-            // For now, random simulation
-            const available = Math.random() > 0.3;
-            setUsernameAvailable(available);
-            setIsCheckingUsername(false);
+            try {
+                const res = await fetch(`/api/check-username?username=${encodeURIComponent(username)}`);
+                const data = await res.json();
+                setUsernameAvailable(data.available);
+            } catch (error) {
+                console.error('Username check failed:', error);
+                setUsernameAvailable(null);
+            } finally {
+                setIsCheckingUsername(false);
+            }
         }, 500);
 
         return () => clearTimeout(timer);
@@ -90,6 +95,19 @@ export default function SuccessPage() {
         e.preventDefault();
         setError('');
         setTouched({ username: true, password: true, passwordConfirm: true });
+
+        // Username availability check
+        if (usernameAvailable === false) {
+            setError('⚠️ Bu kullanıcı adı zaten kullanılıyor');
+            triggerShake();
+            return;
+        }
+
+        if (usernameAvailable === null && username.length >= 3) {
+            setError('⚠️ Kullanıcı adı kontrol ediliyor, lütfen bekleyin');
+            triggerShake();
+            return;
+        }
 
         // Validation
         if (!usernameValidation.valid) {
@@ -204,7 +222,7 @@ export default function SuccessPage() {
                                 animate={{ y: 0 }}
                                 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-display tracking-tighter text-stark-white"
                             >
-                                KABUL EDİLDİN
+                                UYGUN GÖRÜNÜYORSUNUZ
                             </motion.h1>
 
                             {/* Score badge */}
@@ -218,7 +236,7 @@ export default function SuccessPage() {
                                     (score || 0) >= 7 ? 'border-silver shadow-[0_0_30px_rgba(192,192,192,0.2)]' :
                                         'border-deep-crimson shadow-[0_0_30px_rgba(139,0,0,0.2)]'
                                     }`}>
-                                    <p className="text-xs tracking-widest text-silver/60 mb-2">PUAN</p>
+                                    <p className="text-xs tracking-widest text-silver/60 mb-2">UYUMLULUK SKORU</p>
                                     <p className={`text-5xl sm:text-6xl font-bold ${(score || 0) >= 9 ? 'text-yellow-500' :
                                         (score || 0) >= 7 ? 'text-silver' :
                                             'text-deep-crimson'
@@ -235,8 +253,12 @@ export default function SuccessPage() {
                                 transition={{ delay: 0.4 }}
                                 className="text-silver/70 text-sm sm:text-base md:text-lg leading-relaxed max-w-md mx-auto px-4"
                             >
-                                Boşluk seni sinesine çekti.<br />
-                                Artık geri dönüş yok.
+                                Değerlendirmeniz tamamlandı.
+                                <br /><br />
+                                <span className="text-silver/50 text-xs">
+                                    Skorunuz, becerileriniz ve kişiliğiniz arasındaki uyumu gösterir.<br />
+                                    Yüksek skor, ekiplerimizle daha iyi eşleşme anlamına gelir.
+                                </span>
                             </motion.p>
 
                             <motion.button
@@ -252,7 +274,7 @@ export default function SuccessPage() {
                             >
                                 <span className="relative z-10 text-xs sm:text-sm tracking-[0.2em] sm:tracking-[0.3em] 
                                                group-hover:text-void-black transition-colors font-bold">
-                                    KİMLİK OLUŞTUR
+                                    PROFİL OLUŞTUR
                                 </span>
                                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent 
                                               -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
@@ -290,7 +312,7 @@ export default function SuccessPage() {
                                          shadow-[0_8px_32px_0_rgba(139,0,0,0.2)] p-6 sm:p-8"
                             >
                                 <h2 className="text-xl sm:text-2xl font-bold mb-6 text-center text-deep-crimson tracking-widest">
-                                    MAHLAS BELİRLE
+                                    PROFİL OLUŞTURUN
                                 </h2>
 
                                 <form onSubmit={handleRegister} className="space-y-6">
@@ -478,9 +500,11 @@ export default function SuccessPage() {
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
                                         type="submit"
+                                        disabled={usernameAvailable === false || isCheckingUsername}
                                         className="w-full bg-stark-white text-void-black p-4 text-xs font-bold tracking-widest 
                                                  hover:bg-silver transition-all rounded shadow-lg 
-                                                 active:scale-95 min-h-[44px]"
+                                                 active:scale-95 min-h-[44px]
+                                                 disabled:bg-silver/50 disabled:cursor-not-allowed disabled:opacity-50"
                                     >
                                         KAYDI TAMAMLA
                                     </motion.button>

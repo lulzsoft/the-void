@@ -150,16 +150,14 @@ export default function Home() {
                 className="space-y-6"
               >
                 <p className="font-mono text-sm md:text-base text-silver/80 leading-relaxed">
-                  Burası sıradan bir yer değil.
+                  Doğru yetenekleri, doğru ekiplerle buluşturuyoruz.
                 </p>
                 <p className="font-mono text-sm md:text-base text-silver/60 leading-relaxed">
-                  Karanlığın içinde gerçeği arayanların sığınağı.
+                  Becerilerinizi test ediyor, kişiliğinizi anlıyor,
+                  size uygun fırsatları gösteriyoruz.
                 </p>
                 <p className="font-mono text-sm md:text-base text-silver/40 leading-relaxed">
-                  Hazır mısın?
-                </p>
-                <p className="font-mono text-xs text-deep-crimson tracking-widest mt-8 animate-pulse">
-                  TEK BİR ŞANSIN VAR. HATA YAPMA.
+                  Sıradan değilsiniz. Biz de öyle.
                 </p>
               </motion.div>
 
@@ -308,7 +306,7 @@ export default function Home() {
                   href="/initiation"
                   className="btn-void text-sm tracking-widest relative z-50 pointer-events-auto"
                 >
-                  İNİSYASYONA BAŞLA
+                  DEĞERLENDİRME BAŞLAT
                 </a>
               </motion.div>
             </div>
@@ -322,7 +320,7 @@ export default function Home() {
                 © BOŞLUK KOLEKTİFİ
               </div>
               <div className="font-mono text-xs text-silver/30 tracking-wider">
-                TÜM EYLEMLER İZLENMEKTEDİR
+                GÜVENLİ VE GİZLİ
               </div>
             </footer>
 

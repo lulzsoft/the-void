@@ -146,11 +146,11 @@ export default function InitiationPage() {
                                     className="text-center"
                                 >
                                     <h1 className="font-display text-4xl md:text-6xl text-stark-white mb-8">
-                                        <TypewriterText text="İNİSYASYON" speed={100} />
+                                        <TypewriterText text="KEŞİF GÖRÜŞMESİ" speed={100} />
                                     </h1>
                                     <p className="font-mono text-silver/70 text-sm">
                                         <TypewriterText
-                                            text="Kapıcı varlığını bekliyor..."
+                                            text="Sizi tanımak istiyoruz. Sohbet edelim."
                                             speed={50}
                                             delay={1000}
                                         />

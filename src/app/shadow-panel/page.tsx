@@ -83,7 +83,7 @@ export default function ShadowDashboard() {
             {/* Başlık */}
             <div className="flex justify-between items-start">
                 <div>
-                    <h1 className="font-display text-3xl text-stark-white mb-2">BOŞLUK KOMUTA</h1>
+                    <h1 className="font-display text-3xl text-stark-white mb-2">YÖNETİM PANELİ</h1>
                     <p className="font-mono text-xs text-silver/50 tracking-wider">
                         GENEL BAKIŞ • ANALİTİK • SİSTEM
                     </p>

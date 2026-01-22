@@ -16,16 +16,16 @@ const felsefiSorular = [
     "Gerçek lider, sevilmekten korkmayan mıdır, yoksa sevilmeye ihtiyaç duymayan mı?",
 ];
 
-// Demo mod için Kapıcı yanıtları - TÜRKÇE
+// Demo mod için Değerlendirme Asistanı yanıtları - TÜRKÇE
 const kapiciYanitlari = [
-    "İlginç. Ama yüzeyden bahsediyorsun. Bu kelimelerin altında ne yatıyor?",
-    "Boşluk seni duyuyor. Kendini duyup duymadığını sorguluyor.",
-    "Yanıtın çok şey ortaya koyuyor. Belki de niyetlendiğinden fazlasını.",
-    "Yanıtında gömülü bir gerçek var. Ve belki de korku.",
-    "Devam et. Boşluk sabırlıdır. Sonsuzluğumuz var.",
-    "Kararlılıkla konuşuyorsun. Ama şüphesiz kararlılık sadece dogmadır.",
-    "İçindeki gölgeler kıpırdıyor. Onları kabul ediyor musun?",
-    "Kelimeler maskelerdir. Seninkinin arkasında hangi yüzü saklıyorsun?",
+    "İlginç. Daha fazla detay verebilir misiniz?",
+    "Anlıyorum. Peki bu konuda ne düşünüyorsunuz?",
+    "Yanıtınız çok şey ortaya koyuyor. Devam edin.",
+    "Yanıtınızda ilginç bir bakış açısı var.",
+    "Devam edin, sizi dinliyoruz.",
+    "Bu konuda nasıl bir yaklaşımınız var?",
+    "İçten görünüyor. Kendiniz olun.",
+    "Güzel. Başka ne eklemek istersiniz?",
 ];
 
 export interface KapiciMesaj {
