@@ -4,6 +4,7 @@ import { requireAuth } from '@/lib/auth-middleware';
 
 /**
  * POST /api/squads/[id]/join - Join a squad
+ * Next.js 15 compatible with async params
  */
 
 export async function POST(
