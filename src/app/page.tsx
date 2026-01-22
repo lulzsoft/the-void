@@ -20,6 +20,7 @@ const navItems = [
   { label: 'Nasıl Çalışır', href: '/manifesto' },
   { label: 'Değerlendirme', href: '/initiation' },
   { label: 'Squad\'lar', href: '/squads' },
+  { label: 'Giriş', href: '/login' },
 ];
 
 // Lejyon metinleri
