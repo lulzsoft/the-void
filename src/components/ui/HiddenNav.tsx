@@ -224,10 +224,10 @@ export default function HiddenNav({ items, holdDuration = 3000 }: HiddenNavProps
                                         href={item.href}
                                         className="nav-item block text-center group"
                                     >
-                                        <span className="font-mono text-xs text-silver/30 tracking-widest group-hover:text-deep-crimson transition-colors">
+                                        <span className="font-mono text-xs text-deep-crimson tracking-widest group-hover:text-silver transition-colors">
                                             0{index + 1}
                                         </span>
-                                        <span className="block font-display text-4xl md:text-6xl text-stark-white group-hover:text-silver transition-colors mt-2">
+                                        <span className="block font-display text-4xl md:text-6xl text-stark-white group-hover:text-deep-crimson transition-colors mt-2">
                                             {item.label}
                                         </span>
                                     </a>
