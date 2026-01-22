@@ -1,4 +1,4 @@
-import redis from './redis';
+import { redis } from './redis';
 import { Mission, MissionStatus, MissionApplication } from '@/types/mission';
 
 /**
