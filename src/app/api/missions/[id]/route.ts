@@ -10,10 +10,11 @@ import { requireAuth } from '@/lib/auth-middleware';
 
 export async function GET(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const mission = await MissionRegistry.getMission(params.id);
+        const { id } = await params;
+        const mission = await MissionRegistry.getMission(id);
 
         if (!mission) {
             return NextResponse.json({ error: 'Mission not found' }, { status: 404 });
@@ -28,9 +29,10 @@ export async function GET(
 
 export async function PATCH(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const auth = await requireAuth(req);
         if (!auth.user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -39,7 +41,7 @@ export async function PATCH(
         // TODO: Check if user is admin
 
         const body = await req.json();
-        const updated = await MissionRegistry.updateMission(params.id, body);
+        const updated = await MissionRegistry.updateMission(id, body);
 
         if (!updated) {
             return NextResponse.json({ error: 'Mission not found' }, { status: 404 });
@@ -54,9 +56,10 @@ export async function PATCH(
 
 export async function DELETE(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const auth = await requireAuth(req);
         if (!auth.user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -64,7 +67,7 @@ export async function DELETE(
 
         // TODO: Check if user is admin
 
-        await MissionRegistry.deleteMission(params.id);
+        await MissionRegistry.deleteMission(id);
 
         return NextResponse.json({ success: true });
     } catch (error) {

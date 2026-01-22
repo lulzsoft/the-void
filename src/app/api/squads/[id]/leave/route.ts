@@ -8,15 +8,16 @@ import { requireAuth } from '@/lib/auth-middleware';
 
 export async function POST(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const auth = await requireAuth(req);
         if (!auth.user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const squad = await SquadRegistry.leaveSquad(params.id, auth.user.codename);
+        const squad = await SquadRegistry.leaveSquad(id, auth.user.codename);
 
         if (!squad) {
             return NextResponse.json({ error: 'Squad not found' }, { status: 404 });

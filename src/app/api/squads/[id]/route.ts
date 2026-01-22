@@ -10,10 +10,11 @@ import { requireAuth } from '@/lib/auth-middleware';
 
 export async function GET(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const squad = await SquadRegistry.getSquad(params.id);
+        const { id } = await params;
+        const squad = await SquadRegistry.getSquad(id);
 
         if (!squad) {
             return NextResponse.json({ error: 'Squad not found' }, { status: 404 });
@@ -28,15 +29,16 @@ export async function GET(
 
 export async function PATCH(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const auth = await requireAuth(req);
         if (!auth.user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const squad = await SquadRegistry.getSquad(params.id);
+        const squad = await SquadRegistry.getSquad(id);
         if (!squad) {
             return NextResponse.json({ error: 'Squad not found' }, { status: 404 });
         }
@@ -56,7 +58,7 @@ export async function PATCH(
         if (tags) updates.tags = tags;
         if (status) updates.status = status;
 
-        const updated = await SquadRegistry.updateSquad(params.id, updates);
+        const updated = await SquadRegistry.updateSquad(id, updates);
 
         return NextResponse.json({ squad: updated });
     } catch (error) {
@@ -67,15 +69,16 @@ export async function PATCH(
 
 export async function DELETE(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const auth = await requireAuth(req);
         if (!auth.user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const squad = await SquadRegistry.getSquad(params.id);
+        const squad = await SquadRegistry.getSquad(id);
         if (!squad) {
             return NextResponse.json({ error: 'Squad not found' }, { status: 404 });
         }
@@ -85,7 +88,7 @@ export async function DELETE(
             return NextResponse.json({ error: 'Only squad leader can disband' }, { status: 403 });
         }
 
-        await SquadRegistry.disbandSquad(params.id);
+        await SquadRegistry.disbandSquad(id);
 
         return NextResponse.json({ success: true });
     } catch (error) {
