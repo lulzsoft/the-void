@@ -9,9 +9,11 @@ import { requireAuth } from '@/lib/auth-middleware';
 
 export async function POST(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
+
         const auth = await requireAuth(req);
         if (!auth.user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -36,7 +38,7 @@ export async function POST(
 
         // Apply to mission
         const mission = await MissionRegistry.applyToMission(
-            params.id,
+            id,
             squadId,
             squad.name,
             message
