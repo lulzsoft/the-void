@@ -42,7 +42,7 @@ export async function POST(req: Request) {
         // Kodu doğrula (timing-safe)
         const storedCode = await redis.get(`reset_code:${username}`);
 
-        if (!storedCode || !timingSafeEqual(storedCode, code)) {
+        if (!storedCode || !timingSafeEqual(storedCode as string, code)) {
             // Add delay to prevent timing attacks
             await new Promise(resolve => setTimeout(resolve, TIMING_ATTACK_DELAY));
             return NextResponse.json({ error: 'Geçersiz veya süresi dolmuş kod.' }, { status: 400 });
