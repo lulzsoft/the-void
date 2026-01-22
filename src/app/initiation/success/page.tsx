@@ -253,7 +253,7 @@ export default function SuccessPage() {
                                 transition={{ delay: 0.4 }}
                                 className="text-silver/70 text-sm sm:text-base md:text-lg leading-relaxed max-w-md mx-auto px-4"
                             >
-                                Değerlendirmeniz tamamlandı.
+                                Hoş geldin, lejyoner.
                                 <br /><br />
                                 <span className="text-silver/50 text-xs">
                                     Skorunuz, becerileriniz ve kişiliğiniz arasındaki uyumu gösterir.<br />

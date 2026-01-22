@@ -17,20 +17,19 @@ const LiquidBackground = dynamic(
 
 // Navigasyon öğeleri
 const navItems = [
-  { label: 'Manifesto', href: '/manifesto' },
-  { label: 'İnisyasyon', href: '/initiation' },
-  { label: 'Arşivler', href: '/archives' },
+  { label: 'Nasıl Çalışır', href: '/manifesto' },
+  { label: 'Değerlendirme', href: '/initiation' },
+  { label: 'Mission\'lar', href: '/archives' },
 ];
 
-// Propaganda metinleri
+// Lejyon metinleri
 const propagandaTexts = [
-  "Gerçek zayıflar için değildir.",
-  "Bizi buldun. Yoksa biz mi seni bulduk?",
-  "Boşlukta berraklık vardır.",
-  "Her şeyi sorgula. Hiçbir şeye güvenme.",
-  "İnisye olanlar anlar. Geri kalanlar... gözlemler.",
-  "Karanlığı kucakla. Karanlık seni kucaklar.",
-  "Sırlar, onları aramaya cesaret edenler içindir.",
+  "Elite profesyoneller, güçlü kolektifler.",
+  "Yalnız değilsin. Ekibini bul, gücünü katla.",
+  "Her mission için doğru squad.",
+  "Lejyonerler burada toplanıyor.",
+  "Bireysel yetenek + Kolektif güç = Başarı.",
+  "Kendi grubunu kur. Büyük işler yap.",
 ];
 
 export default function Home() {

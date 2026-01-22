@@ -220,7 +220,7 @@ export default function SanctumPage() {
                 <header className="shrink-0 h-16 border-b border-white/10 flex items-center justify-between px-6 bg-void-black/50 backdrop-blur">
                     <div className="flex items-center gap-4">
                         <span className="text-2xl text-silver">#</span>
-                        <div className="font-display text-lg text-stark-white tracking-[0.2em]">TOPLULUK</div>
+                        <div className="font-display text-lg text-stark-white tracking-[0.2em]">LEJYON</div>
                     </div>
                     <div className="text-xs text-silver/40">
                         BAĞLI: <span className="text-stark-white">{activeUsers.length}</span>
