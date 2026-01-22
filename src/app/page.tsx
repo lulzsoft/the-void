@@ -19,7 +19,7 @@ const LiquidBackground = dynamic(
 const navItems = [
   { label: 'Nasıl Çalışır', href: '/manifesto' },
   { label: 'Değerlendirme', href: '/initiation' },
-  { label: 'Mission\'lar', href: '/archives' },
+  { label: 'Squad\'lar', href: '/squads' },
 ];
 
 // Lejyon metinleri
