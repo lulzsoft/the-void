@@ -214,13 +214,13 @@ export default function SuccessPage() {
                                 transition={{ delay: 0.2, type: 'spring' }}
                                 className="inline-block"
                             >
-                                <div className={`px-8 py-6 rounded-lg backdrop-blur-xl bg-white/5 border ${score >= 9 ? 'border-yellow-500 shadow-[0_0_30px_rgba(255,215,0,0.3)]' :
-                                    score >= 7 ? 'border-silver shadow-[0_0_30px_rgba(192,192,192,0.2)]' :
+                                <div className={`px-8 py-6 rounded-lg backdrop-blur-xl bg-white/5 border ${(score || 0) >= 9 ? 'border-yellow-500 shadow-[0_0_30px_rgba(255,215,0,0.3)]' :
+                                    (score || 0) >= 7 ? 'border-silver shadow-[0_0_30px_rgba(192,192,192,0.2)]' :
                                         'border-deep-crimson shadow-[0_0_30px_rgba(139,0,0,0.2)]'
                                     }`}>
                                     <p className="text-xs tracking-widest text-silver/60 mb-2">PUAN</p>
-                                    <p className={`text-5xl sm:text-6xl font-bold ${score >= 9 ? 'text-yellow-500' :
-                                        score >= 7 ? 'text-silver' :
+                                    <p className={`text-5xl sm:text-6xl font-bold ${(score || 0) >= 9 ? 'text-yellow-500' :
+                                        (score || 0) >= 7 ? 'text-silver' :
                                             'text-deep-crimson'
                                         }`}>
                                         {score?.toFixed(1)}
