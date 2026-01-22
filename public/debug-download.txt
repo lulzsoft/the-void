@@ -1,0 +1,6 @@
+[2026-01-15T23:47:08.418Z] API Route Hit: http://localhost:3000/api/sanctum/download?id=1768519570763
+[2026-01-15T23:47:08.430Z] DB Read. Messages count: 23
+[2026-01-15T23:47:08.431Z] Processing message: anaa.pdf, Type: file, DataLen: 188544
+[2026-01-15T23:47:08.431Z] Mime detected: application/pdf
+[2026-01-15T23:47:08.432Z] Buffer created. Size: 141385
+[2026-01-15T23:47:08.432Z] Sending response with filename: anaa.pdf
