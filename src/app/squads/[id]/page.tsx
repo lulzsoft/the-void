@@ -1,25 +1,25 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import type { Squad } from '@/types/squad';
+import HexGrid from '@/components/visual/HexGrid';
+import Link from 'next/link';
 
-export default function SquadDetailPage() {
+export default function SquadDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = React.use(params);
     const router = useRouter();
-    const params = useParams();
-    const squadId = params.id as string;
-
     const [squad, setSquad] = useState<Squad | null>(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [joining, setJoining] = useState(false);
     const [user, setUser] = useState<any>(null);
-    const [actionLoading, setActionLoading] = useState(false);
-    const [error, setError] = useState('');
 
     useEffect(() => {
         fetchUser();
         fetchSquad();
-    }, [squadId]);
+    }, [id]);
 
     const fetchUser = async () => {
         try {
@@ -34,17 +34,15 @@ export default function SquadDetailPage() {
     };
 
     const fetchSquad = async () => {
-        setLoading(true);
         try {
-            const res = await fetch(`/api/squads/${squadId}`);
-            const data = await res.json();
-            if (res.ok) {
-                setSquad(data.squad);
-            } else {
-                setError(data.error || 'Squad not found');
+            const res = await fetch(`/api/squads/${id}`);
+            if (!res.ok) {
+                throw new Error('Squad not found');
             }
-        } catch (e) {
-            setError('Failed to load squad');
+            const data = await res.json();
+            setSquad(data.squad); // API structure: { squad: ... }
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to fetch squad');
         } finally {
             setLoading(false);
         }
@@ -56,243 +54,154 @@ export default function SquadDetailPage() {
             return;
         }
 
-        setActionLoading(true);
-        setError('');
+        setJoining(true);
         try {
-            const res = await fetch(`/api/squads/${squadId}/join`, {
+            const res = await fetch(`/api/squads/${id}/join`, {
                 method: 'POST',
             });
-            const data = await res.json();
 
-            if (res.ok) {
-                setSquad(data.squad);
-            } else {
-                setError(data.error);
-            }
-        } catch (e) {
-            setError('Failed to join squad');
-        } finally {
-            setActionLoading(false);
-        }
-    };
-
-    const handleLeave = async () => {
-        setActionLoading(true);
-        setError('');
-        try {
-            const res = await fetch(`/api/squads/${squadId}/leave`, {
-                method: 'POST',
-            });
-            const data = await res.json();
-
-            if (res.ok) {
-                setSquad(data.squad);
-            } else {
-                setError(data.error);
-            }
-        } catch (e) {
-            setError('Failed to leave squad');
-        } finally {
-            setActionLoading(false);
-        }
-    };
-
-    const handleDisband = async () => {
-        if (!confirm('Squad\'ı kalıcı olarak dağıtmak istediğinize emin misiniz?')) {
-            return;
-        }
-
-        setActionLoading(true);
-        try {
-            const res = await fetch(`/api/squads/${squadId}`, {
-                method: 'DELETE',
-            });
-
-            if (res.ok) {
-                router.push('/squads');
-            } else {
+            if (!res.ok) {
                 const data = await res.json();
-                setError(data.error);
+                throw new Error(data.error || 'Failed to join squad');
             }
-        } catch (e) {
-            setError('Failed to disband squad');
+
+            // Refresh squad data
+            fetchSquad();
+            alert('Hücreye katılım başarılı.');
+        } catch (err) {
+            alert(err instanceof Error ? err.message : 'Failed to join');
         } finally {
-            setActionLoading(false);
+            setJoining(false);
         }
     };
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-void-black text-stark-white font-mono flex items-center justify-center">
-                <p className="text-silver/50">Yükleniyor...</p>
+            <div className="min-h-screen bg-void-black text-stark-white p-8 flex items-center justify-center">
+                <p className="font-mono text-silver/50 animate-pulse">VERİ AKIŞI BEKLENİYOR...</p>
             </div>
         );
     }
 
-    if (error && !squad) {
+    if (error || !squad) {
         return (
-            <div className="min-h-screen bg-void-black text-stark-white font-mono flex items-center justify-center">
+            <div className="min-h-screen bg-void-black text-stark-white p-8 flex items-center justify-center">
                 <div className="text-center">
-                    <p className="text-deep-crimson mb-4">{error}</p>
-                    <button onClick={() => router.push('/squads')} className="text-sm text-silver/50 hover:text-silver">
-                        ← Squad'lara dön
+                    <h1 className="font-display text-4xl text-deep-crimson mb-4">404</h1>
+                    <p className="font-mono text-silver/50">{error || 'Squad not found'}</p>
+                    <button
+                        onClick={() => router.push('/squads')}
+                        className="mt-8 text-sm text-stark-white hover:text-deep-crimson transition-colors"
+                    >
+                        ← Listeye Dön
                     </button>
                 </div>
             </div>
         );
     }
 
-    if (!squad) return null;
-
-    const isLeader = user && squad.leader === user.codename;
     const isMember = user && squad.members.includes(user.codename);
     const isFull = squad.members.length >= squad.maxMembers;
+    const canJoin = squad.status === 'recruiting' && !isMember && !isFull;
 
-    const statusColor = {
-        recruiting: 'text-active-green',
-        full: 'text-silver/50',
-        active: 'text-deep-crimson',
-        disbanded: 'text-silver/30',
-    }[squad.status];
+    // HexGrid için üye listesini hazırla
+    const memberList = squad.members.map(m => ({
+        id: m,
+        codename: m,
+        role: m === squad.leader ? 'leader' : 'member'
+    }));
 
     return (
-        <div className="min-h-screen bg-void-black text-stark-white font-mono p-6">
-            <div className="max-w-4xl mx-auto">
-                {/* Back Button */}
-                <button
-                    onClick={() => router.push('/squads')}
-                    className="text-sm text-silver/50 hover:text-silver mb-6"
-                >
-                    ← Squad'lara dön
-                </button>
-
-                {error && (
-                    <div className="bg-deep-crimson/20 border border-deep-crimson text-deep-crimson p-4 text-sm mb-6">
-                        ⚠️ {error}
+        <div className="min-h-screen bg-void-black text-stark-white p-4 md:p-8">
+            <div className="max-w-7xl mx-auto">
+                {/* Nav */}
+                <div className="flex justify-between items-center mb-8 border-b border-white/10 pb-4">
+                    <Link href="/squads" className="font-mono text-xs text-silver/50 hover:text-white transition-colors">
+                        ← KOMUTA MERKEZİNE DÖN
+                    </Link>
+                    <div className="font-mono text-[10px] text-deep-crimson tracking-widest">
+                        SQUAD_ID: {squad.id.substring(0, 8)}
                     </div>
-                )}
+                </div>
 
-                {/* Header */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="border border-white/10 bg-white/5 p-8 mb-6"
-                >
-                    <div className="flex justify-between items-start mb-4">
-                        <div>
-                            <h1 className="font-display text-4xl md:text-6xl tracking-wider mb-2">
-                                {squad.name}
-                            </h1>
-                            <p className="text-sm text-silver/50">Leader: {squad.leader}</p>
-                        </div>
-                        <div className={`text-sm ${statusColor}`}>
-                            {squad.status === 'recruiting' ? '🟢 AÇIK' : squad.status === 'full' ? '🟡 DOLU' : '🔴 KAPALI'}
-                        </div>
+                {/* Ana Başlık ve Durum */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+                    <div className="lg:col-span-2">
+                        <motion.h1
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="font-display text-5xl md:text-7xl text-stark-white mb-4"
+                        >
+                            {squad.name}
+                        </motion.h1>
+                        <p className="font-mono text-silver/70 leading-relaxed max-w-2xl border-l-2 border-deep-crimson pl-4">
+                            {squad.description}
+                        </p>
                     </div>
 
-                    <p className="text-silver/70 mb-6">{squad.description}</p>
-
-                    {/* Stats */}
-                    <div className="flex gap-8 text-sm mb-6">
-                        <div>
-                            <span className="text-silver/50">Üyeler:</span>{' '}
-                            <span className="text-stark-white font-bold">
-                                {squad.members.length}/{squad.maxMembers}
-                            </span>
-                        </div>
-                        <div>
-                            <span className="text-silver/50">Durum:</span>{' '}
-                            <span className={statusColor}>{squad.status.toUpperCase()}</span>
-                        </div>
-                    </div>
-
-                    {/* Skills */}
-                    {squad.skills && squad.skills.length > 0 && (
-                        <div className="mb-6">
-                            <p className="text-xs text-silver/50 mb-2">ARANAN YETENEKler:</p>
-                            <div className="flex flex-wrap gap-2">
-                                {squad.skills.map((skill, i) => (
-                                    <span key={i} className="text-xs bg-deep-crimson/20 text-deep-crimson px-3 py-1">
-                                        {skill}
-                                    </span>
-                                ))}
+                    {/* Stats Paneli */}
+                    <div className="bg-white/5 border border-white/10 p-6 backdrop-blur-sm">
+                        <h3 className="font-mono text-xs text-silver/50 mb-4 tracking-widest">TAKIM METRİKLERİ</h3>
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm text-silver">DURUM</span>
+                                <span className={`font-mono text-xs px-2 py-1 ${squad.status === 'recruiting' ? 'bg-active-green/20 text-active-green' :
+                                        squad.status === 'full' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-red-500/20 text-red-500'
+                                    }`}>
+                                    {squad.status.toUpperCase()}
+                                </span>
                             </div>
-                        </div>
-                    )}
-
-                    {/* Actions */}
-                    <div className="flex gap-4">
-                        {!user ? (
-                            <button
-                                onClick={() => router.push('/login')}
-                                className="bg-deep-crimson hover:bg-deep-crimson/80 text-stark-white px-6 py-3 text-xs tracking-widest transition-colors"
-                            >
-                                GİRİŞ YAP VE KATIL
-                            </button>
-                        ) : isLeader ? (
-                            <>
-                                <button
-                                    onClick={() => router.push(`/squads/${squadId}/edit`)}
-                                    className="bg-white/10 hover:bg-white/20 text-stark-white px-6 py-3 text-xs tracking-widest transition-colors"
-                                    disabled={actionLoading}
-                                >
-                                    DÜZENLE
-                                </button>
-                                <button
-                                    onClick={handleDisband}
-                                    className="bg-deep-crimson/20 hover:bg-deep-crimson/40 text-deep-crimson px-6 py-3 text-xs tracking-widest transition-colors"
-                                    disabled={actionLoading}
-                                >
-                                    {actionLoading ? 'İŞLENİYOR...' : 'DAĞIT'}
-                                </button>
-                            </>
-                        ) : isMember ? (
-                            <button
-                                onClick={handleLeave}
-                                className="bg-white/10 hover:bg-white/20 text-stark-white px-6 py-3 text-xs tracking-widest transition-colors"
-                                disabled={actionLoading}
-                            >
-                                {actionLoading ? 'İŞLENİYOR...' : 'AYRIL'}
-                            </button>
-                        ) : (
-                            <button
-                                onClick={handleJoin}
-                                className="bg-deep-crimson hover:bg-deep-crimson/80 text-stark-white px-6 py-3 text-xs tracking-widest transition-colors"
-                                disabled={actionLoading || isFull}
-                            >
-                                {actionLoading ? 'İŞLENİYOR...' : isFull ? 'DOLU' : 'KATIL'}
-                            </button>
-                        )}
-                    </div>
-                </motion.div>
-
-                {/* Members */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="border border-white/10 bg-white/5 p-8"
-                >
-                    <h2 className="text-xl font-display tracking-wider mb-4">ÜYELER ({squad.members.length})</h2>
-                    <div className="space-y-3">
-                        {squad.members.map((member, i) => (
-                            <div
-                                key={i}
-                                className="flex items-center justify-between p-3 bg-white/5 border border-white/10"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-deep-crimson/20 border border-deep-crimson flex items-center justify-center text-xs font-bold">
-                                        {member.substring(0, 2).toUpperCase()}
-                                    </div>
-                                    <span className="text-sm">{member}</span>
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm text-silver">KAPASİTE</span>
+                                <span className="font-mono text-stark-white">
+                                    {squad.members.length} / {squad.maxMembers}
+                                </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm text-silver">GÖREV GÜCÜ</span>
+                                <div className="text-right flex flex-col items-end gap-1">
+                                    {(squad.skills || []).slice(0, 3).map(skill => (
+                                        <span key={skill} className="text-[10px] text-silver/70 bg-white/5 px-1">{skill}</span>
+                                    ))}
                                 </div>
-                                {member === squad.leader && (
-                                    <span className="text-xs bg-deep-crimson/20 text-deep-crimson px-2 py-1">LEADER</span>
-                                )}
                             </div>
-                        ))}
+                        </div>
+
+                        {/* Action Button */}
+                        <div className="mt-8">
+                            {canJoin ? (
+                                <button
+                                    onClick={handleJoin}
+                                    disabled={joining}
+                                    className="w-full bg-deep-crimson hover:bg-red-600 text-white font-mono text-xs py-3 tracking-widest transition-all hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100 uppercase"
+                                >
+                                    {joining ? 'BAĞLANTI KURULUYOR...' : 'EKİBİ DESTEKLE (KATIL)'}
+                                </button>
+                            ) : isMember ? (
+                                <button disabled className="w-full border border-active-green/30 text-active-green font-mono text-xs py-3 cursor-default bg-active-green/5">
+                                    EKİP ÜYESİSİNİZ
+                                </button>
+                            ) : (
+                                <button disabled className="w-full border border-white/10 text-silver/30 font-mono text-xs py-3 cursor-not-allowed">
+                                    ERİŞİM KISITLI / DOLU
+                                </button>
+                            )}
+                        </div>
                     </div>
-                </motion.div>
+                </div>
+
+                {/* Üye Grid (Hex) */}
+                <div className="mb-12">
+                    <h2 className="font-display text-2xl text-stark-white mb-8 flex items-center gap-2">
+                        <span className="w-2 h-2 bg-deep-crimson rounded-full" />
+                        AKTİF PERSONEL
+                    </h2>
+
+                    <div className="bg-void-black border border-white/5 p-8 relative overflow-hidden">
+                        <div className="absolute inset-0 bg-grid-white/[0.02] pointer-events-none" />
+                        <HexGrid members={memberList} />
+                    </div>
+                </div>
             </div>
         </div>
     );
