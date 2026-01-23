@@ -16,6 +16,39 @@ export default function MissionDetailPage() {
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState<any>(null);
     const [applying, setApplying] = useState(false);
+
+    // Submission State
+    const [showSubmitModal, setShowSubmitModal] = useState(false);
+    const [proofUrl, setProofUrl] = useState('');
+    const [submitNotes, setSubmitNotes] = useState('');
+    const [submitStatus, setSubmitStatus] = useState<{ loading: boolean; error?: string; success?: boolean }>({ loading: false });
+
+    // ... useEffect ...
+
+    const handleSubmitProof = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSubmitStatus({ loading: true });
+
+        try {
+            const res = await fetch(`/api/missions/${id}/submit`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ proofUrl, notes: submitNotes })
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+
+            setSubmitStatus({ loading: false, success: true });
+            setShowSubmitModal(false);
+            alert('Kanıt başarıyla iletildi. İnceleniyor.');
+            setProofUrl('');
+            setSubmitNotes('');
+        } catch (err: any) {
+            setSubmitStatus({ loading: false, error: err.message });
+        }
+    };
+
     const [selectedSquad, setSelectedSquad] = useState('');
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
@@ -266,6 +299,72 @@ export default function MissionDetailPage() {
                         </button>
                     </div>
                 )}
+                {/* Submission Modal */}
+                <AnimatePresence>
+                    {showSubmitModal && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-void-black/80 backdrop-blur-sm"
+                        >
+                            <motion.div
+                                initial={{ scale: 0.9, y: 20 }}
+                                animate={{ scale: 1, y: 0 }}
+                                exit={{ scale: 0.9, y: 20 }}
+                                className="w-full max-w-md bg-void-black border border-deep-crimson p-8 relative"
+                            >
+                                <button
+                                    onClick={() => setShowSubmitModal(false)}
+                                    className="absolute top-4 right-4 text-silver/50 hover:text-white"
+                                >
+                                    ✕
+                                </button>
+
+                                <h3 className="font-display text-2xl text-stark-white mb-6">KANIT ODASI</h3>
+                                <p className="text-xs text-silver/70 mb-6 font-mono">
+                                    Görevin tamamlandığına dair kanıtları (Github Repo, Drive Linki, Ekran Görüntüsü URL'i) buraya bırakın.
+                                </p>
+
+                                <form onSubmit={handleSubmitProof} className="space-y-6">
+                                    <div>
+                                        <label className="block text-xs text-silver/50 mb-2 uppercase">Kanıt URL'i</label>
+                                        <input
+                                            type="url"
+                                            value={proofUrl}
+                                            onChange={e => setProofUrl(e.target.value)}
+                                            required
+                                            placeholder="https://github.com/..."
+                                            className="w-full bg-white/5 border border-white/10 p-3 text-sm text-stark-white focus:border-deep-crimson focus:outline-none focus:ring-1 focus:ring-deep-crimson transition-colors"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs text-silver/50 mb-2 uppercase">Operasyon Notları</label>
+                                        <textarea
+                                            value={submitNotes}
+                                            onChange={e => setSubmitNotes(e.target.value)}
+                                            rows={3}
+                                            placeholder="Opsiyonel detaylar..."
+                                            className="w-full bg-white/5 border border-white/10 p-3 text-sm text-stark-white focus:border-deep-crimson focus:outline-none focus:ring-1 focus:ring-deep-crimson transition-colors resize-none"
+                                        />
+                                    </div>
+
+                                    {submitStatus.error && (
+                                        <div className="text-red-500 text-xs">{submitStatus.error}</div>
+                                    )}
+
+                                    <button
+                                        type="submit"
+                                        disabled={submitStatus.loading}
+                                        className="w-full bg-active-green hover:bg-green-600 text-void-black font-bold py-3 text-xs tracking-widest transition-colors disabled:opacity-50"
+                                    >
+                                        {submitStatus.loading ? 'YÜKLENİYOR...' : 'DOSYAYI MÜHÜRLE VE GÖNDER'}
+                                    </button>
+                                </form>
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
         </div>
     );
