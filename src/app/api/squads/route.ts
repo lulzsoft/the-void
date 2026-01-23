@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SquadRegistry } from '@/lib/squad-registry';
 import { requireAuth } from '@/lib/auth-middleware';
-import { squadCreationLimiter, checkRateLimit } from '@/lib/rate-limit';
+import { rateLimiters } from '@/lib/ratelimit';
 import { createSquadSchema, validateBody } from '@/lib/validation';
 
 /**
@@ -40,12 +40,12 @@ export async function POST(req: NextRequest) {
         const user = auth.session;
 
         // Rate limiting: 5 squad creations per hour per user
-        const rateLimitResult = await checkRateLimit(
-            squadCreationLimiter,
-            `user:${user.codename}`
-        );
-        if (!rateLimitResult.success) {
-            return rateLimitResult.error!;
+        const rateLimit = await rateLimiters.strict(`squad:create:${user.codename}`);
+        if (!rateLimit.success) {
+            return NextResponse.json(
+                { error: 'Çok fazla deneme. Lütfen biraz bekleyip tekrar deneyin.' },
+                { status: 429 }
+            );
         }
 
         const body = await req.json();

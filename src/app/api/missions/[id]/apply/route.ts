@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { MissionRegistry } from '@/lib/mission-registry';
 import { SquadRegistry } from '@/lib/squad-registry';
 import { requireAuth } from '@/lib/auth-middleware';
-import { missionApplicationLimiter, checkRateLimit } from '@/lib/rate-limit';
+import { rateLimiters } from '@/lib/ratelimit';
 
 /**
  * POST /api/missions/[id]/apply - Apply to mission with a squad
@@ -24,13 +24,13 @@ export async function POST(
         }
         const user = auth.session;
 
-        // Rate limiting: 10 mission applications per hour per user
-        const rateLimitResult = await checkRateLimit(
-            missionApplicationLimiter,
-            `user:${user.codename}`
-        );
-        if (!rateLimitResult.success) {
-            return rateLimitResult.error!;
+        // Rate limiting: Mission applications
+        const rateLimit = await rateLimiters.api(`mission:apply:${user.codename}`);
+        if (!rateLimit.success) {
+            return NextResponse.json(
+                { error: 'Çok fazla deneme. Lütfen biraz bekleyip tekrar deneyin.' },
+                { status: 429 }
+            );
         }
 
         const body = await req.json();
