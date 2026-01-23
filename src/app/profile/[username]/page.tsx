@@ -123,7 +123,8 @@ export default function ProfilePage() {
                     status: 'ACTIVE',
                     createdAt: Date.now() - 10000000,
                     skills: 'React, Next.js, Cyber Security, UI Design',
-                    painTolerance: 'Yüksek'
+                    painTolerance: 'Yüksek',
+                    xp: 1250 // Mock XP corresponding to Elite
                 });
                 setLoading(false);
             }, 1000);
