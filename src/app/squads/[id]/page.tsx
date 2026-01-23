@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import type { Squad } from '@/types/squad';
 import HexGrid from '@/components/visual/HexGrid';
+import EncryptedTerminal from '@/components/squad/EncryptedTerminal';
 import Link from 'next/link';
 
 export default function SquadDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -146,7 +147,7 @@ export default function SquadDetailPage({ params }: { params: Promise<{ id: stri
                             <div className="flex justify-between items-center">
                                 <span className="text-sm text-silver">DURUM</span>
                                 <span className={`font-mono text-xs px-2 py-1 ${squad.status === 'recruiting' ? 'bg-active-green/20 text-active-green' :
-                                        squad.status === 'full' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-red-500/20 text-red-500'
+                                    squad.status === 'full' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-red-500/20 text-red-500'
                                     }`}>
                                     {squad.status.toUpperCase()}
                                 </span>

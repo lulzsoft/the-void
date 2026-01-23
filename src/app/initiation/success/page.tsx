@@ -337,7 +337,7 @@ export default function SuccessPage() {
                                                     onBlur={() => setTouched(prev => ({ ...prev, username: true }))}
                                                     className="w-full bg-white/5 border border-white/10 p-3 pr-10
                                                              focus:border-deep-crimson focus:outline-none focus:ring-2 
-                                                             focus:ring-deep-crimson/20 transition-all rounded"
+                                                             focus:ring-deep-crimson/20 transition-all rounded normal-case"
                                                     placeholder="Benzersiz kullanıcı adı"
                                                     aria-label="Kullanıcı adı"
                                                     aria-invalid={touched.username && !usernameValidation.valid}
