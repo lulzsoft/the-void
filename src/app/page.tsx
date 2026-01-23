@@ -8,6 +8,7 @@ import TypewriterText from '@/components/ui/TypewriterText';
 import HiddenNav from '@/components/ui/HiddenNav';
 import SubliminalAudio from '@/components/audio/SubliminalAudio';
 import { useHeartbeat } from '@/hooks/use-heartbeat';
+import { usePublicStats } from '@/hooks/use-public-stats';
 
 // WebGL için dynamic import
 const LiquidBackground = dynamic(
@@ -35,26 +36,15 @@ const propagandaTexts = [
 
 export default function Home() {
   useHeartbeat(); // Start heartbeat
+  const { stats, loading: statsLoading } = usePublicStats();
   const [showIntro, setShowIntro] = useState(true);
   const [audioEnabled, setAudioEnabled] = useState(false);
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
   const [phase, setPhase] = useState<'loading' | 'intro' | 'main'>('loading');
   const [mounted, setMounted] = useState(false);
-  const [observerCount, setObserverCount] = useState<string | number>('...');
 
   useEffect(() => {
     setMounted(true);
-
-    // Fetch real stats
-    fetch('/api/stats/public')
-      .then(res => res.json())
-      .then(data => {
-        if (data.active !== undefined) {
-          setObserverCount(data.active);
-        }
-      })
-      .catch(() => setObserverCount('ERR'));
-
   }, []);
 
   // İlk yükleme sekansı
@@ -248,7 +238,7 @@ export default function Home() {
                 SİSTEM AKTİF
               </div>
               <div className="font-mono text-xs text-deep-crimson tracking-wider">
-                GÖZLEMCİLER: {observerCount}
+                GÖZLEMCİLER: {statsLoading ? '...' : (stats?.members.active || 0)}
               </div>
             </header>
 
