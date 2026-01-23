@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MissionRegistry } from '@/lib/mission-registry';
 import { requireAuth, requireAdmin } from '@/lib/auth-middleware';
+import { createMissionSchema, validateBody } from '@/lib/validation';
 
 /**
  * GET /api/missions - List missions
