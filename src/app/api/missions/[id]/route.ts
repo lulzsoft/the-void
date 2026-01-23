@@ -34,9 +34,13 @@ export async function PATCH(
     try {
         const { id } = await params;
         const auth = await requireAuth(req);
-        if (!auth.user) {
+        if (auth instanceof NextResponse) {
+            return auth;
+        }
+        if (!auth || !auth.session) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
+        const user = auth.session;
 
         // TODO: Check if user is admin
 
@@ -61,9 +65,13 @@ export async function DELETE(
     try {
         const { id } = await params;
         const auth = await requireAuth(req);
-        if (!auth.user) {
+        if (auth instanceof NextResponse) {
+            return auth;
+        }
+        if (!auth || !auth.session) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
+        const user = auth.session;
 
         // TODO: Check if user is admin
 

@@ -29,9 +29,13 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
     try {
         const auth = await requireAuth(req);
-        if (!auth.user) {
+        if (auth instanceof NextResponse) {
+            return auth;
+        }
+        if (!auth || !auth.session) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
+        const user = auth.session;
 
         const body = await req.json();
         const { name, description, maxMembers, skills, tags } = body;
@@ -53,7 +57,7 @@ export async function POST(req: NextRequest) {
         const squad = await SquadRegistry.createSquad({
             name,
             description,
-            leader: auth.user.codename,
+            leader: user.codename,
             members: [], // Will be set by createSquad
             maxMembers: parseInt(maxMembers),
             skills: skills || [],

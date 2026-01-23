@@ -13,11 +13,15 @@ export async function POST(
     try {
         const { id } = await params;
         const auth = await requireAuth(req);
-        if (!auth.user) {
+        if (auth instanceof NextResponse) {
+            return auth;
+        }
+        if (!auth || !auth.session) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
+        const user = auth.session;
 
-        const squad = await SquadRegistry.leaveSquad(id, auth.user.codename);
+        const squad = await SquadRegistry.leaveSquad(id, user.codename);
 
         if (!squad) {
             return NextResponse.json({ error: 'Squad not found' }, { status: 404 });

@@ -15,9 +15,13 @@ export async function POST(
         const { id } = await params;
 
         const auth = await requireAuth(req);
-        if (!auth.user) {
+        if (auth instanceof NextResponse) {
+            return auth; // Return error response
+        }
+        if (!auth || !auth.session) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
+        const user = auth.session;
 
         const body = await req.json();
         const { squadId, message } = body;
@@ -32,7 +36,7 @@ export async function POST(
             return NextResponse.json({ error: 'Squad not found' }, { status: 404 });
         }
 
-        if (!squad.members.includes(auth.user.codename)) {
+        if (!squad.members.includes(user.codename)) {
             return NextResponse.json({ error: 'You must be a member of this squad to apply' }, { status: 403 });
         }
 

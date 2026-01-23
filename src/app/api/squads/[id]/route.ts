@@ -34,9 +34,13 @@ export async function PATCH(
     try {
         const { id } = await params;
         const auth = await requireAuth(req);
-        if (!auth.user) {
+        if (auth instanceof NextResponse) {
+            return auth;
+        }
+        if (!auth || !auth.session) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
+        const user = auth.session;
 
         const squad = await SquadRegistry.getSquad(id);
         if (!squad) {
@@ -44,7 +48,7 @@ export async function PATCH(
         }
 
         // Only leader can update
-        if (squad.leader !== auth.user.codename) {
+        if (squad.leader !== user.codename) {
             return NextResponse.json({ error: 'Only squad leader can update' }, { status: 403 });
         }
 
@@ -74,9 +78,13 @@ export async function DELETE(
     try {
         const { id } = await params;
         const auth = await requireAuth(req);
-        if (!auth.user) {
+        if (auth instanceof NextResponse) {
+            return auth;
+        }
+        if (!auth || !auth.session) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
+        const user = auth.session;
 
         const squad = await SquadRegistry.getSquad(id);
         if (!squad) {
@@ -84,7 +92,7 @@ export async function DELETE(
         }
 
         // Only leader can disband
-        if (squad.leader !== auth.user.codename) {
+        if (squad.leader !== user.codename) {
             return NextResponse.json({ error: 'Only squad leader can disband' }, { status: 403 });
         }
 
