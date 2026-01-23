@@ -18,7 +18,21 @@ export async function POST(req: Request) {
 
         if (action === 'APPROVE') {
             await AlienRegistry.approveCandidate(id);
-            // Notify User
+
+            // Fetch user profile to get email
+            const profile = await AlienRegistry.getStatusByIP(id) || await (await import('@/lib/alien-registry')).AlienRegistry.getAllProfiles().then(p => p.find(u => u.id === id));
+
+            // Send Welcome Email
+            if (profile?.email) {
+                const { EmailService, EmailTemplates } = await import('@/lib/email');
+                await EmailService.send({
+                    to: profile.email,
+                    subject: 'The Void: Başvurunuz Onaylandı',
+                    html: EmailTemplates.welcome(profile.username || 'Ajan')
+                });
+            }
+
+            // Notify User (System Notification)
             const { NotificationRegistry } = await import('@/lib/notification-registry');
             await NotificationRegistry.create({
                 userId: id,

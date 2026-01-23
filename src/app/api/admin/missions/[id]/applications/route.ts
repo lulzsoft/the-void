@@ -33,12 +33,13 @@ export async function PATCH(
         // Notify Squad Leader
         const squad = await SquadRegistry.getSquad(squadId);
         if (squad) {
-            const title = status === 'accepted' ? 'GÖREV ONAYLANDI' : 'GÖREV REDDEDİLDİ';
+            const title = status === 'accepted' ? 'TOPLULUĞA KABUL: GÖREV' : 'REDDEDİLDİ: GÖREV';
             const type = status === 'accepted' ? 'success' : 'alert';
             const message = status === 'accepted'
                 ? `Ekibiniz "${mission.title}" operasyonu için seçildi. Hazırlıklara başlayın.`
                 : `"${mission.title}" operasyonu başvurunuz reddedildi.`;
 
+            // System Notification
             await NotificationRegistry.create({
                 userId: squad.leader,
                 title,
@@ -46,6 +47,21 @@ export async function PATCH(
                 type,
                 link: `/missions/${id}`
             });
+
+            // Email Notification
+            // Need to get Leader's email
+            // Use dynamic import for AlienRegistry to avoid circular deps if any
+            const { AlienRegistry } = await import('@/lib/alien-registry');
+            const leaderProfile = await AlienRegistry.getProfileByUsername(squad.leader);
+
+            if (leaderProfile?.email && status === 'accepted') {
+                const { EmailService, EmailTemplates } = await import('@/lib/email');
+                await EmailService.send({
+                    to: leaderProfile.email,
+                    subject: `GÖREV ATANDI: ${mission.title}`,
+                    html: EmailTemplates.missionAssigned(mission.title, squad.name)
+                });
+            }
         }
 
         return NextResponse.json({ success: true, mission });

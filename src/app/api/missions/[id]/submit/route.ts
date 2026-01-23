@@ -25,6 +25,16 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         // Başarılı simülasyonu
         await new Promise(r => setTimeout(r, 1000));
 
+        // Log Activity (Local/User Only? Or Global? Submissions are usually private until approved)
+        // Let's log it as a notification to admins later, but here just log internally or skip.
+        // Actually, let's log "Mission Report Filed"
+        const { ActivityRegistry } = await import('@/lib/activity-registry');
+        await ActivityRegistry.log({
+            type: 'mission_completed', // Using this type for now as 'submission' or generic
+            message: `${session.username} filed a report for Mission ${id.substring(0, 6)}...`,
+            meta: { missionId: id, user: session.username }
+        });
+
         return NextResponse.json({ success: true, message: 'Kanıt başarıyla sisteme yüklendi. İnceleme başlatıldı.' });
 
     } catch (error) {

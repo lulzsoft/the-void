@@ -69,6 +69,14 @@ export async function POST(req: NextRequest) {
             status: 'recruiting',
         });
 
+        // Log Activity
+        const { ActivityRegistry } = await import('@/lib/activity-registry');
+        await ActivityRegistry.log({
+            type: 'squad_created',
+            message: `New squd deployed: ${squad.name}`,
+            meta: { squadId: squad.id, leader: user.codename }
+        });
+
         return NextResponse.json({ squad }, { status: 201 });
     } catch (error) {
         console.error('Create squad error:', error);
