@@ -171,31 +171,53 @@ export default function InitiationPage() {
                                         {messages.map((message, index) => (
                                             <motion.div
                                                 key={index}
-                                                initial={{ opacity: 0, y: 10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                transition={{ delay: 0.1 }}
-                                                className={`${message.role === 'gatekeeper'
-                                                    ? 'text-left'
-                                                    : 'text-right'
-                                                    }`}
+                                                initial={{ opacity: 0, x: message.role === 'gatekeeper' ? -20 : 20 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                transition={{ duration: 0.5, ease: "easeOut" }}
+                                                className={`flex ${message.role === 'gatekeeper' ? 'justify-start' : 'justify-end'} mb-6`}
                                             >
-                                                {message.role === 'gatekeeper' && index === 0 && (
-                                                    <p className="font-mono text-xs text-deep-crimson mb-2 tracking-widest block">
-                                                        KAPICI KONUŞUYOR
-                                                    </p>
-                                                )}
+                                                <div className={`max-w-[85%] md:max-w-[70%] ${message.role === 'gatekeeper' ? 'text-left' : 'text-right'}`}>
+                                                    {/* Role indicator */}
+                                                    <div className={`flex items-center gap-2 mb-2 ${message.role === 'gatekeeper' ? 'justify-start' : 'justify-end'}`}>
+                                                        {message.role === 'gatekeeper' && (
+                                                            <span className="w-1 h-1 bg-deep-crimson rounded-full animate-pulse" />
+                                                        )}
+                                                        <span className="font-mono text-[10px] text-silver/40 tracking-[0.2em]">
+                                                            {message.role === 'gatekeeper' ? 'KAPICI.SYS' : 'ADAY.USR'} // {new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+                                                        </span>
+                                                    </div>
 
-                                                <span className="font-mono text-xs text-silver/30 tracking-wider mb-2 block">
-                                                    {message.role === 'gatekeeper' ? 'KAPICI' : 'SEN'}
-                                                </span>
-                                                <p className={`font-mono leading-relaxed ${message.role === 'gatekeeper'
-                                                    ? index === 0
-                                                        ? 'font-display text-xl md:text-2xl text-stark-white mb-4'
-                                                        : 'text-base text-silver'
-                                                    : 'text-base text-stark-white/70'
-                                                    }`}>
-                                                    {message.content}
-                                                </p>
+                                                    {/* Message Content */}
+                                                    <div className={`relative p-4 md:p-6 border 
+                                                        ${message.role === 'gatekeeper'
+                                                            ? 'border-white/10 bg-white/5 text-silver'
+                                                            : 'border-deep-crimson/30 bg-deep-crimson/5 text-stark-white'
+                                                        }`}>
+                                                        {/* Decorative corner markers */}
+                                                        {message.role === 'gatekeeper' ? (
+                                                            <>
+                                                                <div className="absolute top-0 left-0 w-1 h-1 bg-white/30" />
+                                                                <div className="absolute bottom-0 right-0 w-1 h-1 bg-white/30" />
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <div className="absolute top-0 right-0 w-1 h-1 bg-deep-crimson/50" />
+                                                                <div className="absolute bottom-0 left-0 w-1 h-1 bg-deep-crimson/50" />
+                                                            </>
+                                                        )}
+
+                                                        <p className={`font-mono leading-relaxed whitespace-pre-wrap ${index === 0 && message.role === 'gatekeeper'
+                                                                ? 'font-display text-xl md:text-2xl text-stark-white'
+                                                                : 'text-sm md:text-base'
+                                                            }`}>
+                                                            {message.role === 'gatekeeper' ? (
+                                                                <TypewriterText text={message.content} speed={15} />
+                                                            ) : (
+                                                                message.content
+                                                            )}
+                                                        </p>
+                                                    </div>
+                                                </div>
                                             </motion.div>
                                         ))}
 
@@ -217,31 +239,53 @@ export default function InitiationPage() {
                                         <div ref={messagesEndRef} />
                                     </div>
 
-                                    {/* Giriş Alanı */}
-                                    <div className="mt-8 relative">
-                                        <div className="razor-border p-4 bg-void-black/50 backdrop-blur-sm">
-                                            <textarea
-                                                ref={inputRef}
-                                                value={input}
-                                                onChange={(e) => setInput(e.target.value)}
-                                                onKeyDown={handleKeyDown}
-                                                placeholder="Gerçeğini söyle..."
-                                                className="w-full bg-transparent font-mono text-stark-white text-base 
-                                                    resize-none focus:outline-none placeholder:text-silver/30"
-                                                rows={3}
-                                                disabled={isTyping}
-                                            />
-                                            <div className="flex justify-between items-center mt-4">
-                                                <span className="font-mono text-xs text-silver/30">
-                                                    {input.length} / 500
-                                                </span>
-                                                <button
-                                                    onClick={handleSubmit}
-                                                    disabled={!input.trim() || isTyping}
-                                                    className="btn-void text-xs disabled:opacity-30 disabled:cursor-not-allowed"
-                                                >
-                                                    {isTyping ? 'İŞLENİYOR...' : 'GÖNDER'}
-                                                </button>
+                                    {/* Giriş Alanı - Cyber Style */}
+                                    <div className="mt-8 relative z-20">
+                                        <div className="group relative">
+                                            {/* Glow Effect Background */}
+                                            <div className="absolute -inset-0.5 bg-gradient-to-r from-deep-crimson/50 to-void-black rounded-lg blur opacity-20 group-hover:opacity-40 transition duration-1000 group-focus-within:opacity-100 group-focus-within:duration-200" />
+
+                                            <div className="relative bg-void-black border border-white/10 group-focus-within:border-deep-crimson/80 p-6 transition-colors duration-300">
+                                                {/* Corner Accents */}
+                                                <div className="absolute top-0 left-0 w-2 h-2 border-l border-t border-silver/50" />
+                                                <div className="absolute top-0 right-0 w-2 h-2 border-r border-t border-silver/50" />
+                                                <div className="absolute bottom-0 left-0 w-2 h-2 border-l border-b border-silver/50" />
+                                                <div className="absolute bottom-0 right-0 w-2 h-2 border-r border-b border-silver/50" />
+
+                                                <textarea
+                                                    ref={inputRef}
+                                                    value={input}
+                                                    onChange={(e) => setInput(e.target.value)}
+                                                    onKeyDown={handleKeyDown}
+                                                    placeholder="Sinyal gönder..."
+                                                    className="w-full bg-transparent font-mono text-stark-white text-base 
+                                                        resize-none focus:outline-none placeholder:text-silver/20 tracking-wide"
+                                                    rows={2}
+                                                    disabled={isTyping}
+                                                />
+
+                                                <div className="flex justify-between items-end mt-4 pt-4 border-t border-white/5">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`w-1.5 h-1.5 rounded-full ${isTyping ? 'bg-deep-crimson animate-pulse' : 'bg-active-green'}`} />
+                                                        <span className="font-mono text-[10px] text-silver/30 tracking-widest uppercase">
+                                                            {isTyping ? 'BAĞLANTI MEŞGUL' : 'SİSTEM HAZIR'}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="flex items-center gap-4">
+                                                        <span className="font-mono text-[10px] text-silver/20">
+                                                            {input.length} / 500
+                                                        </span>
+                                                        <button
+                                                            onClick={handleSubmit}
+                                                            disabled={!input.trim() || isTyping}
+                                                            className="font-mono text-xs tracking-widest text-stark-white hover:text-deep-crimson disabled:text-silver/20 disabled:cursor-not-allowed transition-colors uppercase flex items-center gap-2 group/btn"
+                                                        >
+                                                            <span>{isTyping ? 'İŞLENİYOR' : 'GÖNDER'}</span>
+                                                            <span className="text-lg leading-none group-hover/btn:translate-x-1 transition-transform">→</span>
+                                                        </button>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
