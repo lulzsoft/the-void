@@ -3,6 +3,7 @@ import { Bodoni_Moda, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import GhostLayer from '@/components/GhostLayer';
 import UrlMasker from '@/components/UrlMasker';
+import NotificationCenter from '@/components/NotificationCenter';
 import { Suspense } from 'react';
 
 const bodoniModa = Bodoni_Moda({
@@ -75,6 +76,7 @@ export default function RootLayout({
       >
         <GhostLayer />
         <Suspense fallback={null}>
+          <NotificationCenter />
           <UrlMasker />
         </Suspense>
         {children}
