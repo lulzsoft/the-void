@@ -84,9 +84,17 @@ export default function ShadowDashboard() {
             <div className="flex justify-between items-start">
                 <div>
                     <h1 className="font-display text-3xl text-stark-white mb-2">YÖNETİM PANELİ</h1>
-                    <p className="font-mono text-xs text-silver/50 tracking-wider">
-                        GENEL BAKIŞ • ANALİTİK • SİSTEM
-                    </p>
+                    <div className="flex gap-4 items-center">
+                        <p className="font-mono text-xs text-silver/50 tracking-wider">
+                            GENEL BAKIŞ • ANALİTİK • SİSTEM
+                        </p>
+                        <a
+                            href="/shadow-panel/analytics"
+                            className="font-mono text-xs text-deep-crimson hover:text-red-400 tracking-wider border border-deep-crimson/30 px-2 py-1"
+                        >
+                            DASHBOARD →
+                        </a>
+                    </div>
                 </div>
                 <div className="text-right">
                     <p className="font-mono text-xs text-silver/30">SİSTEM DURUMU</p>
