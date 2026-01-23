@@ -21,18 +21,39 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BOŞLUK",
-  description: "Karanlığa gir. Bilinmeyeni kucakla.",
-  keywords: ["boşluk", "karanlık", "bilinmeyen", "inisyasyon"],
+  metadataBase: new URL('https://bosluk.vercel.app'),
+  title: {
+    default: "BOŞLUK - Elite Professional Network",
+    template: "%s |BOŞLUK"
+  },
+  description: "Elite profesyonel network. Güçlü squad'lar oluştur, büyük mission'lara katıl. Bireysel yetenek + Kolektif güç = Başarı.",
+  keywords: ["professional network", "freelance", "squad", "mission", "elite network", "collaboration", "remote work", "boşluk"],
   authors: [{ name: "BOŞLUK" }],
+  creator: "BOŞLUK",
+  publisher: "BOŞLUK",
   openGraph: {
-    title: "BOŞLUK",
-    description: "Karanlığa gir. Bilinmeyeni kucakla.",
     type: "website",
+    locale: "tr_TR",
+    url: "https://bosluk.vercel.app",
+    title: "BOŞLUK - Elite Professional Network",
+    description: "Elite profesyonel network. Squad'lar oluştur, mission'lara katıl.",
+    siteName: "BOŞLUK",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "BOŞLUK - Elite Professional Network",
+    description: "Elite profesyonel network. Squad'lar oluştur, mission'lara katıl.",
   },
   robots: {
-    index: false,
-    follow: false,
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
 };
 
