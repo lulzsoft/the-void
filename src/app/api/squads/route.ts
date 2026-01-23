@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SquadRegistry } from '@/lib/squad-registry';
 import { requireAuth } from '@/lib/auth-middleware';
+import { squadCreationLimiter, checkRateLimit } from '@/lib/rate-limit';
+import { createSquadSchema, validateBody } from '@/lib/validation';
 
 /**
  * GET /api/squads - List all squads
@@ -37,31 +39,33 @@ export async function POST(req: NextRequest) {
         }
         const user = auth.session;
 
+        // Rate limiting: 5 squad creations per hour per user
+        const rateLimitResult = await checkRateLimit(
+            squadCreationLimiter,
+            `user:${user.codename}`
+        );
+        if (!rateLimitResult.success) {
+            return rateLimitResult.error!;
+        }
+
         const body = await req.json();
-        const { name, description, maxMembers, skills, tags } = body;
 
-        // Validation
-        if (!name || name.length < 3) {
-            return NextResponse.json({ error: 'Squad name must be at least 3 characters' }, { status: 400 });
+        // Validate and sanitize input
+        const validation = await validateBody(createSquadSchema, body);
+        if (!validation.success) {
+            return NextResponse.json({ error: validation.error }, { status: 400 });
         }
-
-        if (!description || description.length < 10) {
-            return NextResponse.json({ error: 'Description must be at least 10 characters' }, { status: 400 });
-        }
-
-        if (!maxMembers || maxMembers < 2 || maxMembers > 8) {
-            return NextResponse.json({ error: 'Max members must be between 2 and 8' }, { status: 400 });
-        }
+        const { name, description, maxMembers, skills, tags } = validation.data;
 
         // Create squad
         const squad = await SquadRegistry.createSquad({
             name,
             description,
             leader: user.codename,
-            members: [], // Will be set by createSquad
-            maxMembers: parseInt(maxMembers),
-            skills: skills || [],
-            tags: tags || [],
+            members: [],
+            maxMembers,
+            skills,
+            tags,
             status: 'recruiting',
         });
 

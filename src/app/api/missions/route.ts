@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MissionRegistry } from '@/lib/mission-registry';
-import { requireAuth } from '@/lib/auth-middleware';
+import { requireAuth, requireAdmin } from '@/lib/auth-middleware';
 
 /**
  * GET /api/missions - List missions
@@ -28,17 +28,11 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
     try {
-        const auth = await requireAuth(req);
-        if (auth instanceof NextResponse) {
-            return auth;
+        // Admin check - only admins can create missions
+        const adminCheck = await requireAdmin(req);
+        if (adminCheck) {
+            return adminCheck; // Return error response if not admin
         }
-        if (!auth || !auth.session) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-        const user = auth.session;
-
-        // TODO: Check if user is admin
-        // For now, any authenticated user can create (will be restricted to admin later)
 
         const body = await req.json();
         const { title, description, requirements, duration, compensation, requiredSquadSize, tags, remote, deadline } = body;

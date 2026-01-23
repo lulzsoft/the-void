@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MissionRegistry } from '@/lib/mission-registry';
-import { requireAuth } from '@/lib/auth-middleware';
+import { requireAuth, requireAdmin } from '@/lib/auth-middleware';
 
 /**
  * GET /api/missions/[id] - Get mission details
@@ -33,16 +33,11 @@ export async function PATCH(
 ) {
     try {
         const { id } = await params;
-        const auth = await requireAuth(req);
-        if (auth instanceof NextResponse) {
-            return auth;
+        // Admin check - only admins can update missions
+        const adminCheck = await requireAdmin(req);
+        if (adminCheck) {
+            return adminCheck; // Return error response if not admin
         }
-        if (!auth || !auth.session) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-        const user = auth.session;
-
-        // TODO: Check if user is admin
 
         const body = await req.json();
         const updated = await MissionRegistry.updateMission(id, body);
@@ -64,16 +59,11 @@ export async function DELETE(
 ) {
     try {
         const { id } = await params;
-        const auth = await requireAuth(req);
-        if (auth instanceof NextResponse) {
-            return auth;
+        // Admin check - only admins can delete missions
+        const adminCheck = await requireAdmin(req);
+        if (adminCheck) {
+            return adminCheck; // Return error response if not admin
         }
-        if (!auth || !auth.session) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-        const user = auth.session;
-
-        // TODO: Check if user is admin
 
         await MissionRegistry.deleteMission(id);
 

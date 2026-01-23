@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { MissionRegistry } from '@/lib/mission-registry';
 import { SquadRegistry } from '@/lib/squad-registry';
 import { requireAuth } from '@/lib/auth-middleware';
+import { missionApplicationLimiter, checkRateLimit } from '@/lib/rate-limit';
 
 /**
  * POST /api/missions/[id]/apply - Apply to mission with a squad
@@ -22,6 +23,15 @@ export async function POST(
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
         const user = auth.session;
+
+        // Rate limiting: 10 mission applications per hour per user
+        const rateLimitResult = await checkRateLimit(
+            missionApplicationLimiter,
+            `user:${user.codename}`
+        );
+        if (!rateLimitResult.success) {
+            return rateLimitResult.error!;
+        }
 
         const body = await req.json();
         const { squadId, message } = body;

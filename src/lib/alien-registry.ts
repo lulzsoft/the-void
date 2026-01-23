@@ -2,6 +2,7 @@ import { redis } from './redis';
 import crypto from 'crypto';
 
 export type AlienStatus = 'PENDING' | 'ADMITTED' | 'REJECTED' | 'BANNED';
+export type UserRole = 'user' | 'admin';
 
 export interface AlienProfile {
     id: string; // UUID or generated ID
@@ -10,6 +11,7 @@ export interface AlienProfile {
     skills: string;
     painTolerance: string;
     status: AlienStatus;
+    role: UserRole; // User role for permissions
     createdAt: number;
     approvedAt?: number;
     accessKey?: string; // For stealth login
@@ -80,6 +82,7 @@ export class AlienRegistry {
             accessKey,
             ...data,
             status: 'PENDING',
+            role: 'user',
             createdAt: Date.now()
         } as AlienProfile;
 
