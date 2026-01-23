@@ -30,31 +30,31 @@ export default function SquadsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-void-black text-stark-white font-mono p-6">
+        <div className="min-h-screen bg-void-black text-stark-white font-mono p-4 md:p-6">
             {/* Header */}
             <div className="max-w-6xl mx-auto mb-8">
-                <div className="flex justify-between items-center mb-6">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                     <div>
-                        <h1 className="font-display text-4xl md:text-6xl tracking-wider mb-2">SQUAD'LAR</h1>
-                        <p className="text-silver/60 text-sm">Kolektiflere katıl veya kendi grubunu kur</p>
+                        <h1 className="font-display text-3xl md:text-6xl tracking-wider mb-2">SQUAD'LAR</h1>
+                        <p className="text-silver/60 text-xs md:text-sm">Kolektiflere katıl veya kendi grubunu kur</p>
                     </div>
                     <button
                         onClick={() => router.push('/squads/create')}
-                        className="bg-deep-crimson hover:bg-deep-crimson/80 text-stark-white px-6 py-3 text-xs tracking-widest transition-colors"
+                        className="w-full md:w-auto bg-deep-crimson hover:bg-deep-crimson/80 text-stark-white px-6 py-3 text-xs tracking-widest transition-colors text-center"
                     >
-                        + YENİ SQUAD OLU\u015eTUR
+                        + YENİ SQUAD OLUŞTUR
                     </button>
                 </div>
 
                 {/* Filters */}
-                <div className="flex gap-4 border-b border-white/10 pb-4">
+                <div className="flex overflow-x-auto pb-4 gap-2 md:gap-4 border-b border-white/10 no-scrollbar">
                     {(['all', 'recruiting', 'full'] as const).map((f) => (
                         <button
                             key={f}
                             onClick={() => setFilter(f)}
-                            className={`text-xs tracking-widest px-4 py-2 transition-colors ${filter === f
-                                    ? 'text-deep-crimson border-b-2 border-deep-crimson'
-                                    : 'text-silver/50 hover:text-silver'
+                            className={`text-xs tracking-widest px-4 py-2 transition-colors whitespace-nowrap ${filter === f
+                                ? 'text-deep-crimson border-b-2 border-deep-crimson'
+                                : 'text-silver/50 hover:text-silver'
                                 }`}
                         >
                             {f === 'all' ? 'TÜMÜ' : f === 'recruiting' ? 'AÇIK' : 'DOLU'}
