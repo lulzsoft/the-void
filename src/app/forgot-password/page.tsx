@@ -23,7 +23,7 @@ export default function ForgotPasswordPage() {
             const res = await fetch('/api/forgot-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username })
+                body: JSON.stringify({ input: username }) // Send as 'input' to match API
             });
 
             const data = await res.json();
@@ -91,13 +91,13 @@ export default function ForgotPasswordPage() {
                 {step === 'email' && (
                     <form onSubmit={handleSendCode} className="space-y-6">
                         <div>
-                            <label className="block text-xs text-silver/50 mb-2 uppercase">MAHLAS</label>
+                            <label className="block text-xs text-silver/50 mb-2 uppercase">MAHLAS VEYA E-POSTA</label>
                             <input
                                 type="text"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                                 className="w-full bg-white/5 border border-white/10 p-3 focus:border-deep-crimson focus:outline-none transition-colors"
-                                placeholder="Mahlas (kullanıcı adın)"
+                                placeholder="Mahlas veya E-posta adresi"
                                 required
                             />
                         </div>

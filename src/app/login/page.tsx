@@ -60,7 +60,7 @@ export default function LoginPage() {
 
                     <form onSubmit={handleLogin} className="space-y-6">
                         <div className="space-y-2">
-                            <label className="font-mono text-xs text-silver/50 uppercase tracking-wider">MAHLAS</label>
+                            <label className="font-mono text-xs text-silver/50 tracking-wider">MAHLAS</label>
                             <input
                                 type="text"
                                 value={username}
@@ -71,7 +71,7 @@ export default function LoginPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="font-mono text-xs text-silver/50 uppercase tracking-wider">ŞİFRE</label>
+                            <label className="font-mono text-xs text-silver/50 tracking-wider">ŞİFRE</label>
                             <input
                                 type="password"
                                 value={password}

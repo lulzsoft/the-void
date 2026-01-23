@@ -21,15 +21,22 @@ export const EmailService = {
 
         try {
             const data = await resend.emails.send({
-                from: 'The Void <system@thevoid.network>', // Update this with a verified domain if available
+                from: 'The Void <onboarding@resend.dev>', // Use default testing domain
                 to,
                 subject,
                 html,
                 text
             });
+
+            if (data.error) {
+                console.error('[Email Service] Resend API Error:', data.error);
+                return { success: false, error: data.error };
+            }
+
+            console.log('[Email Service] Sent successfully:', data.data);
             return { success: true, data };
         } catch (error) {
-            console.error('[Email Service] Error:', error);
+            console.error('[Email Service] Unexpected Error:', error);
             return { success: false, error };
         }
     }

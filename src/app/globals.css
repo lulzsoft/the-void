@@ -11,10 +11,12 @@
 /* CSS Variables - The Void Palette */
 :root {
   /* Core Colors */
-  --void-black: #000000;
+  --void-black: #030305;
+  /* Slightly richer black for better contrast */
   --stark-white: #FFFFFF;
   --silver: #C0C0C0;
   --deep-crimson: #880000;
+  --abyssal-blue: #050510;
   --alert-red: #FF0000;
 
   /* Semantic Colors */
@@ -23,6 +25,7 @@
   --muted: var(--silver);
   --accent: var(--deep-crimson);
   --danger: var(--alert-red);
+  --glass-border: rgba(255, 255, 255, 0.1);
 
   /* Typography Scale (rem-based for Architect control) */
   --font-size-xs: 0.75rem;
@@ -64,6 +67,7 @@
   --color-stark-white: var(--stark-white);
   --color-silver: var(--silver);
   --color-deep-crimson: var(--deep-crimson);
+  --color-abyssal-blue: var(--abyssal-blue);
   --color-alert-red: var(--alert-red);
   --font-serif: 'Bodoni Moda', 'Didot', 'Times New Roman', serif;
   --font-mono: 'JetBrains Mono', 'Courier New', monospace;
@@ -421,4 +425,122 @@ h6 {
     opacity: 1;
     transform: scale(1.5);
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ABYSSAL UPGRADE LAYERS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Glassmorphism Utilities */
+.glass-panel {
+  background: rgba(5, 5, 16, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+.glass-panel-hover {
+  transition: all var(--transition-normal) ease;
+}
+
+.glass-panel-hover:hover {
+  background: rgba(5, 5, 16, 0.6);
+  border-color: rgba(136, 0, 0, 0.3);
+  box-shadow: 0 0 20px rgba(136, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Scanline Effect */
+.scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to bottom,
+      rgba(255, 255, 255, 0),
+      rgba(255, 255, 255, 0) 50%,
+      rgba(0, 0, 0, 0.2) 50%,
+      rgba(0, 0, 0, 0.2));
+  background-size: 100% 4px;
+  z-index: 10;
+  opacity: 0.15;
+}
+
+/* CRT Flicker Animation */
+@keyframes text-flicker {
+  0% {
+    opacity: 0.1;
+  }
+
+  2% {
+    opacity: 1;
+  }
+
+  8% {
+    opacity: 0.1;
+  }
+
+  9% {
+    opacity: 1;
+  }
+
+  12% {
+    opacity: 0.1;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  25% {
+    opacity: 1;
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  70% {
+    opacity: 0.7;
+  }
+
+  72% {
+    opacity: 0.2;
+  }
+
+  77% {
+    opacity: 0.9;
+  }
+
+  100% {
+    opacity: 0.9;
+  }
+}
+
+.text-glitch {
+  animation: text-flicker 4s infinite;
+}
+
+/* Float Animation */
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float 8s ease-in-out infinite;
+  animation-delay: 2s;
 }

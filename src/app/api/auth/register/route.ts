@@ -12,6 +12,12 @@ export async function POST(req: Request) {
         const body = await req.json();
         const { username, password, email, skills, painTolerance, answers, deviceHash } = body;
 
+        // DB Connectivity Check
+        if (!process.env.KV_REST_API_URL && !process.env.UPSTASH_REDIS_REST_URL) {
+            console.error('CRITICAL: Redis URL is MISSING!');
+            return NextResponse.json({ error: 'Veritabanı bağlantı hatası (ENV eksik).' }, { status: 500 });
+        }
+
         if (!username || !password) {
             return NextResponse.json({ error: 'Eksik bilgi.' }, { status: 400 });
         }
@@ -58,8 +64,9 @@ export async function POST(req: Request) {
             throw e;
         }
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Registration Error:', error);
-        return NextResponse.json({ error: 'Sistem hatası.' }, { status: 500 });
+        console.error('Stack:', error.stack);
+        return NextResponse.json({ error: `Sistem hatası: ${error.message || 'Bilinmeyen'}` }, { status: 500 });
     }
 }

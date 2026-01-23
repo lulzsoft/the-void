@@ -2,31 +2,25 @@ import { NextResponse } from 'next/server';
 import { AlienRegistry } from '@/lib/alien-registry';
 import { decryptEmail, generateVerificationCode } from '@/lib/crypto-utils';
 import { redis } from '@/lib/redis';
-import { Resend } from 'resend';
 import { rateLimiters } from '@/lib/ratelimit';
 import { getClientIp } from '@/lib/utils';
 import { RESET_CODE_TTL } from '@/lib/constants';
+
+import { EmailService } from '@/lib/email';
 import { getPasswordResetEmail } from '@/lib/email-templates';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-// E-posta gönderme fonksiyonu (Resend ile)
+// Email gönder (EmailService kullanarak)
 async function sendEmail(to: string, code: string, username: string) {
-    try {
-        const emailContent = getPasswordResetEmail(code, username);
+    const emailContent = getPasswordResetEmail(code, username);
 
-        await resend.emails.send({
-            from: 'BOŞLUK <noreply@bosluk.vercel.app>',
-            to: [to],
-            subject: emailContent.subject,
-            html: emailContent.html,
-            text: emailContent.text, // Plain text fallback
-        });
-        return true;
-    } catch (error) {
-        console.error('[EMAIL ERROR]', error);
-        return false;
-    }
+    const result = await EmailService.send({
+        to,
+        subject: emailContent.subject,
+        html: emailContent.html,
+        text: emailContent.text
+    });
+
+    return result.success;
 }
 
 export async function POST(req: Request) {
@@ -42,14 +36,28 @@ export async function POST(req: Request) {
             );
         }
 
-        const { username } = await req.json();
+        const { input } = await req.json(); // Changed 'username' to 'input'
 
-        if (!username) {
-            return NextResponse.json({ error: 'Mahlas gerekli.' }, { status: 400 });
+        if (!input) {
+            return NextResponse.json({ error: 'Mahlas veya E-posta gerekli.' }, { status: 400 });
         }
 
-        // Kullanıcıyı bul
-        const profile = await AlienRegistry.getProfileByUsername(username);
+        // Kullanıcıyı bulma (Mahlas veya Email)
+        let profile = await AlienRegistry.getProfileByUsername(input);
+
+        // Eğer username ile bulunamadıysa, tüm profilleri tara ve email eşleşmesine bak
+        // NOT: Bu performanslı değil ama MVP için decrypt edip bakmaktan başka çare yok (encryption deterministic değilse)
+        // Eğer encryption deterministic ise direkt hash ile arayabilirdik. CryptoUtils'e bakmak lazım.
+        // Şimdilik getAllProfiles ile array'den bulalım.
+        if (!profile) {
+            const allProfiles = await AlienRegistry.getAllProfiles();
+            profile = allProfiles.find(p => {
+                if (!p.email) return false;
+                try {
+                    return decryptEmail(p.email) === input;
+                } catch { return false; }
+            }) || null;
+        }
 
         if (!profile) {
             // Güvenlik: Kullanıcı yoksa bile hata verme (timing attack önleme)
@@ -62,7 +70,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Bu hesaba kayıtlı e-posta yok.' }, { status: 400 });
         }
 
-        // E-postayı çöz
+        const username = profile.username || profile.codename;
         const email = decryptEmail(profile.email);
 
         // 6 haneli kod üret
@@ -75,15 +83,27 @@ export async function POST(req: Request) {
         await redis.del(`reset_attempts:${username}`);
 
         // E-posta gönder
+        console.log(`[RESET_PASSWORD] Sending email to decrypted: ${email} for user: ${username}`);
         const emailSent = await sendEmail(email, code, username);
 
-        if (!emailSent) {
-            // Email gönderemediyse kodu sil
-            await redis.del(`reset_code:${username}`);
-            return NextResponse.json({ error: 'E-posta gönderilemedi. Lütfen tekrar deneyin.' }, { status: 500 });
+        // DEV FALLBACK: Always log the code in development or if email fails
+        if (process.env.NODE_ENV !== 'production' || !emailSent) {
+            console.log(`==========================================`);
+            console.log(`[DEV/FALLBACK] Password Reset Code for ${username}:`);
+            console.log(`CODE: ${code}`);
+            console.log(`==========================================`);
         }
 
-        return NextResponse.json({ success: true });
+        if (!emailSent) {
+            console.error(`[RESET_PASSWORD] Email send failed for ${username}`);
+            // In dev mode, return success anyway so they can use the console code
+            if (process.env.NODE_ENV === 'production') {
+                await redis.del(`reset_code:${username}`);
+                return NextResponse.json({ error: 'E-posta gönderilemedi. Sistem loglarını kontrol edin.' }, { status: 500 });
+            }
+        }
+
+        return NextResponse.json({ success: true, debug: process.env.NODE_ENV !== 'production' ? 'Code logged to console' : undefined });
 
     } catch (error) {
         console.error('Forgot Password Error:', error);

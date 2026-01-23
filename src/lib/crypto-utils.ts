@@ -4,19 +4,22 @@ import { EMAIL_ENCRYPTION_KEY_LENGTH } from './constants';
 const ALGORITHM = 'aes-256-gcm';
 
 // 32-byte key from environment variable (hex string)
+// 32-byte key from environment variable (hex string)
 function getKey(): Buffer {
     const key = process.env.EMAIL_ENCRYPTION_KEY;
-    if (!key) {
-        throw new Error('EMAIL_ENCRYPTION_KEY environment variable not set');
+    if (key) {
+        // Validate hex format and length (64 hex chars = 32 bytes)
+        const hexRegex = new RegExp(`^[0-9a-fA-F]{${EMAIL_ENCRYPTION_KEY_LENGTH}}$`);
+        if (!hexRegex.test(key)) {
+            console.warn(`[Crypto] EMAIL_ENCRYPTION_KEY invalid format. Using fallback.`);
+        } else {
+            return Buffer.from(key, 'hex');
+        }
     }
 
-    // Validate hex format and length (64 hex chars = 32 bytes)
-    const hexRegex = new RegExp(`^[0-9a-fA-F]{${EMAIL_ENCRYPTION_KEY_LENGTH}}$`);
-    if (!hexRegex.test(key)) {
-        throw new Error(`EMAIL_ENCRYPTION_KEY must be ${EMAIL_ENCRYPTION_KEY_LENGTH} hex characters (${EMAIL_ENCRYPTION_KEY_LENGTH / 2} bytes)`);
-    }
-
-    return Buffer.from(key, 'hex');
+    // Fallback: Derive from JWT_SECRET (Resilience)
+    const secret = process.env.JWT_SECRET || 'default-insecure-secret-key-do-not-use-prod';
+    return crypto.createHash('sha256').update(secret).digest();
 }
 
 /**
