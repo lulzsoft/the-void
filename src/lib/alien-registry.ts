@@ -201,6 +201,20 @@ export class AlienRegistry {
     }
 
     /**
+     * Tüm profilleri çeker (Stats API için)
+     */
+    static async getAllProfiles(): Promise<AlienProfile[]> {
+        const ids = await redis.smembers('aliens:all');
+        if (ids.length === 0) return [];
+
+        const pipeline = redis.pipeline();
+        ids.forEach(id => pipeline.hgetall(`alien:${id}`));
+        const results = await pipeline.exec();
+
+        return results as AlienProfile[];
+    }
+
+    /**
      * Aktif ziyaretçi sayısını döner (Son 45sn)
      */
     static async getActiveVisitorCount(): Promise<number> {
