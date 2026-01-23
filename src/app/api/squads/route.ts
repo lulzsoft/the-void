@@ -64,8 +64,8 @@ export async function POST(req: NextRequest) {
             leader: user.codename,
             members: [],
             maxMembers,
-            skills,
-            tags,
+            skills: skills || [],
+            tags: tags || [],
             status: 'recruiting',
         });
 
