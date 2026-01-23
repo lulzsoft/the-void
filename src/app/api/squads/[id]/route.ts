@@ -20,7 +20,24 @@ export async function GET(
             return NextResponse.json({ error: 'Squad not found' }, { status: 404 });
         }
 
-        return NextResponse.json({ squad });
+        // Calculate Stats
+        const { MissionRegistry } = await import('@/lib/mission-registry');
+        const missions = await MissionRegistry.getMissionsBySquad(id);
+        const completedMissions = missions.filter(m => m.status === 'completed');
+
+        const totalEarnings = completedMissions.reduce((sum, m) => {
+            const val = parseInt(m.compensation.replace(/[^0-9]/g, '')) || 0;
+            return sum + val;
+        }, 0);
+
+        const stats = {
+            totalMissions: missions.length,
+            completedMissions: completedMissions.length,
+            totalEarnings: totalEarnings > 0 ? `$${totalEarnings.toLocaleString()}` : '$0',
+            successRate: missions.length > 0 ? Math.round((completedMissions.length / missions.length) * 100) : 0
+        };
+
+        return NextResponse.json({ squad, stats });
     } catch (error) {
         console.error('Get squad error:', error);
         return NextResponse.json({ error: 'Failed to fetch squad' }, { status: 500 });

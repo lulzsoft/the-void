@@ -58,8 +58,20 @@ export async function POST(
             message
         );
 
+
         if (!mission) {
             return NextResponse.json({ error: 'Mission not found' }, { status: 404 });
+        }
+
+        // Notify Squad Leader if applicant is not the leader
+        if (squad.leader !== user.username) {
+            const { NotificationRegistry } = await import('@/lib/notification-registry');
+            await NotificationRegistry.create({
+                userId: squad.leader,
+                title: 'MISSION APPLICATION',
+                message: `Operative ${user.username} applied squad ${squad.name} to mission ${mission.title || mission.id}.`,
+                type: 'info'
+            });
         }
 
         return NextResponse.json({ mission, message: 'Application submitted successfully' });

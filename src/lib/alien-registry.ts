@@ -218,9 +218,28 @@ export class AlienRegistry {
     }
 
     /**
+     * Profil bilgilerini günceller
+     */
+    static async updateProfile(id: string, updates: Partial<AlienProfile>): Promise<void> {
+        const allowedUpdates = ['skills', 'painTolerance', 'email', 'answers', 'biography'];
+        const filteredUpdates: any = {};
+
+        Object.keys(updates).forEach(key => {
+            if (allowedUpdates.includes(key)) {
+                filteredUpdates[key] = (updates as any)[key];
+            }
+        });
+
+        if (Object.keys(filteredUpdates).length > 0) {
+            await redis.hset(`alien:${id}`, filteredUpdates);
+        }
+    }
+
+    /**
      * Aktif ziyaretçi sayısını döner (Son 45sn)
      */
     static async getActiveVisitorCount(): Promise<number> {
+
         return await redis.zcard('visitors:active');
     }
 }

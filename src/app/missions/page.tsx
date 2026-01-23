@@ -9,17 +9,31 @@ export default function MissionsPage() {
     const router = useRouter();
     const [missions, setMissions] = useState<Mission[]>([]);
     const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState<'all' | 'open' | 'in-progress' | 'completed'>('all');
+    const [filters, setFilters] = useState({
+        status: 'all',
+        search: '',
+        difficulty: 'all',
+        minReward: 0
+    });
 
+    // Debounce search
     useEffect(() => {
-        fetchMissions();
-    }, [filter]);
+        const timer = setTimeout(() => {
+            fetchMissions();
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [filters]);
 
     const fetchMissions = async () => {
         setLoading(true);
         try {
-            const url = filter === 'all' ? '/api/missions' : `/api/missions?status=${filter}`;
-            const res = await fetch(url);
+            const params = new URLSearchParams();
+            if (filters.status !== 'all') params.append('status', filters.status);
+            if (filters.search) params.append('search', filters.search);
+            if (filters.difficulty !== 'all') params.append('difficulty', filters.difficulty);
+            if (filters.minReward > 0) params.append('minReward', filters.minReward.toString());
+
+            const res = await fetch(`/api/missions?${params.toString()}`);
             const data = await res.json();
             setMissions(data.missions || []);
         } catch (error) {
@@ -44,19 +58,43 @@ export default function MissionsPage() {
                     </div>
 
                     {/* Filter Tabs */}
-                    <div className="flex gap-1 bg-white/5 p-1 rounded-sm mt-4 md:mt-0">
-                        {(['all', 'open', 'in-progress', 'completed'] as const).map((f) => (
-                            <button
-                                key={f}
-                                onClick={() => setFilter(f)}
-                                className={`px-4 py-2 text-[10px] tracking-widest transition-all ${filter === f
+                    <div className="flex flex-col gap-4 mt-6 md:mt-0 w-full md:w-auto items-end">
+
+                        {/* Search & Inputs */}
+                        <div className="flex gap-2 w-full md:w-auto">
+                            <input
+                                type="text"
+                                placeholder="ARA..."
+                                className="bg-white/5 border border-white/10 p-2 text-[10px] w-full md:w-48 focus:border-deep-crimson focus:outline-none transition-colors"
+                                onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+                            />
+                            <select
+                                className="bg-white/5 border border-white/10 p-2 text-[10px] focus:border-deep-crimson focus:outline-none"
+                                onChange={(e) => setFilters(prev => ({ ...prev, difficulty: e.target.value }))}
+                            >
+                                <option value="all">ZORLUK: TÜMÜ</option>
+                                <option value="easy">KOLAY</option>
+                                <option value="medium">ORTA</option>
+                                <option value="hard">ZOR</option>
+                                <option value="extreme">EXTREME</option>
+                            </select>
+                        </div>
+
+                        {/* Status Tabs */}
+                        <div className="flex gap-1 bg-white/5 p-1 rounded-sm">
+                            {(['all', 'open', 'in-progress', 'completed'] as const).map((f) => (
+                                <button
+                                    key={f}
+                                    onClick={() => setFilters(prev => ({ ...prev, status: f }))}
+                                    className={`px-4 py-2 text-[10px] tracking-widest transition-all ${filters.status === f
                                         ? 'bg-deep-crimson text-white shadow-glow'
                                         : 'text-silver/50 hover:text-silver hover:bg-white/5'
-                                    }`}
-                            >
-                                {f === 'all' ? 'TÜMÜ' : f.toUpperCase()}
-                            </button>
-                        ))}
+                                        }`}
+                                >
+                                    {f === 'all' ? 'TÜMÜ' : f.toUpperCase()}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
 

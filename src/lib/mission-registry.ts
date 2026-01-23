@@ -59,11 +59,63 @@ export class MissionRegistry {
     }
 
     /**
+     * Get missions with filters
+     */
+    static async getMissionsWithFilters(filters: {
+        status?: string;
+        search?: string;
+        minReward?: number;
+        difficulty?: string;
+    }): Promise<Mission[]> {
+        let missions = await this.getAllMissions();
+
+        // 1. Status Filter
+        if (filters.status && filters.status !== 'all') {
+            missions = missions.filter(m => m.status === filters.status);
+        }
+
+        // 2. Search (Title, Desc, Tags)
+        if (filters.search) {
+            const query = filters.search.toLowerCase();
+            missions = missions.filter(m =>
+                m.title.toLowerCase().includes(query) ||
+                m.description.toLowerCase().includes(query) ||
+                (m.tags && m.tags.some(t => t.toLowerCase().includes(query)))
+            );
+        }
+
+        // 3. Difficulty
+        if (filters.difficulty && filters.difficulty !== 'all') {
+            missions = missions.filter(m => m.difficulty === filters.difficulty);
+        }
+
+        // 4. Min Reward
+        if (filters.minReward) {
+            missions = missions.filter(m => {
+                // "$10,000" -> 10000, "5%" -> 0 (ignore), "Equity" -> 0
+                // Only works for numeric rewards
+                const reward = parseInt(m.compensation.replace(/[^0-9]/g, '')) || 0;
+                return reward >= (filters.minReward as number);
+            });
+        }
+
+        return missions;
+    }
+
+    /**
      * Get missions by status
      */
     static async getMissionsByStatus(status: MissionStatus): Promise<Mission[]> {
         const allMissions = await this.getAllMissions();
         return allMissions.filter(m => m.status === status);
+    }
+
+    /**
+     * Get missions assigned to a squad
+     */
+    static async getMissionsBySquad(squadId: string): Promise<Mission[]> {
+        const allMissions = await this.getAllMissions();
+        return allMissions.filter(m => m.assignedSquad === squadId);
     }
 
     /**

@@ -15,13 +15,17 @@ export async function PUT(req: Request) {
         // Validasyon (Basit)
         if (skills && typeof skills !== 'string') return NextResponse.json({ error: 'Invalid skills format' }, { status: 400 });
 
-        // Update in DB (AlienRegistry'e update metodu eklenmeli veya mock edilmeli)
-        // Şimdilik mock update simüle ediyoruz (In-memory store varsa orayı günceller)
+        // Update in DB
+        const payload = session as any;
+        await AlienRegistry.updateProfile(payload.id, {
+            skills,
+            painTolerance: painTolerance || 'UNKNOWN',
+            biography: bio
+        });
 
-        // Not: AlienRegistry'de update fonksiyonu yoksa, şaka amaçlı sadece başarılı dönüyoruz.
-        console.log(`[PROFILE UPDATE] User: ${session.username}, Skills: ${skills}`);
+        console.log(`[PROFILE UPDATE] User: ${payload.username} updated profile.`);
 
-        return NextResponse.json({ success: true, message: 'Profil güncellendi.' });
+        return NextResponse.json({ success: true, message: 'Profil başarıyla güncellendi.' });
 
     } catch (error) {
         return NextResponse.json({ error: 'Update failed' }, { status: 500 });

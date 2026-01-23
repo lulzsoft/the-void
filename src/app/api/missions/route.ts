@@ -11,14 +11,17 @@ import { createMissionSchema, validateBody } from '@/lib/validation';
 export async function GET(req: NextRequest) {
     try {
         const { searchParams } = new URL(req.url);
-        const status = searchParams.get('status');
+        const status = searchParams.get('status') || 'all';
+        const search = searchParams.get('search') || undefined;
+        const difficulty = searchParams.get('difficulty') || undefined;
+        const minReward = searchParams.get('minReward') ? parseInt(searchParams.get('minReward')!) : undefined;
 
-        let missions;
-        if (status) {
-            missions = await MissionRegistry.getMissionsByStatus(status as any);
-        } else {
-            missions = await MissionRegistry.getAllMissions();
-        }
+        const missions = await MissionRegistry.getMissionsWithFilters({
+            status,
+            search,
+            difficulty,
+            minReward
+        });
 
         return NextResponse.json({ missions });
     } catch (error) {

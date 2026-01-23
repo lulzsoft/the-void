@@ -3,7 +3,7 @@ import { MissionRegistry } from '@/lib/mission-registry';
 
 export async function calculateUserStats(username: string) {
     // 1. Get User Profile
-    const profile = await AlienRegistry.getByUsername(username);
+    const profile = await AlienRegistry.getProfileByUsername(username);
     if (!profile) return null;
 
     // 2. Mock Mission Stats (Until we have a real relation)

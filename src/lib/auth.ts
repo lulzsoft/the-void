@@ -37,3 +37,11 @@ export async function verifySession(token: string) {
         return null;
     }
 }
+
+export async function getSession() {
+    const { cookies } = await import('next/headers');
+    const cookieStore = await cookies();
+    const token = cookieStore.get('void_session')?.value;
+    if (!token) return null;
+    return await verifySession(token);
+}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { Mission } from '@/types/mission';
 import type { Squad } from '@/types/squad';
 
@@ -30,11 +30,12 @@ export default function MissionDetailPage() {
         setSubmitStatus({ loading: true });
 
         try {
-            const res = await fetch(`/api/missions/${id}/submit`, {
+            const res = await fetch(`/api/missions/${missionId}/submit`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ proofUrl, notes: submitNotes })
             });
+
 
             const data = await res.json();
             if (!res.ok) throw new Error(data.error);

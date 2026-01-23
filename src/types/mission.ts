@@ -11,6 +11,7 @@ export interface Mission {
     duration: string; // "3 months", "6 weeks"
     compensation: string; // "Equity + $50K", "Revenue share"
     requiredSquadSize?: number; // Minimum squad size (optional)
+    difficulty?: 'easy' | 'medium' | 'hard' | 'extreme';
     status: 'open' | 'in-progress' | 'completed' | 'cancelled';
     createdAt: number;
     updatedAt: number;

@@ -15,8 +15,17 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Invalid Request' }, { status: 400 });
         }
 
+
         if (action === 'APPROVE') {
             await AlienRegistry.approveCandidate(id);
+            // Notify User
+            const { NotificationRegistry } = await import('@/lib/notification-registry');
+            await NotificationRegistry.create({
+                userId: id,
+                title: 'ACCESS GRANTED',
+                message: 'Engizisyon başvurunuzu onayladı. The Void\'a hoş geldiniz.',
+                type: 'success'
+            });
         } else {
             await AlienRegistry.rejectCandidate(id);
         }

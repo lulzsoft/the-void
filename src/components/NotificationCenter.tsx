@@ -16,45 +16,56 @@ export default function NotificationCenter() {
     const [isOpen, setIsOpen] = useState(false);
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [lastRefreshed, setLastRefreshed] = useState(Date.now());
 
-    // Sahte bildirim simülasyonu
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            addNotification({
-                title: 'SİSTEM GÜNCELLEMESİ',
-                message: 'V.2.0.4 yaması yüklendi. Görsel arayüz optimize edildi.',
-                type: 'info'
-            });
-        }, 2000);
+    // Fetch Notifications
+    const fetchNotifications = async (silent = false) => {
+        try {
+            const res = await fetch('/api/notifications');
+            if (!res.ok) return;
+            const data = await res.json();
 
-        const timer2 = setTimeout(() => {
-            addNotification({
-                title: 'YENİ GÖREV',
-                message: 'Operasyon "Red Dawn" erişime açıldı. Detayları incele.',
-                type: 'alert'
-            });
-        }, 10000);
+            if (data.notifications) {
+                setNotifications(prev => {
+                    const newItems = data.notifications;
+                    // Check for new unread items for toast
+                    // If not silent (initial load), show toasts for very recent items (< 10s)
+                    return newItems;
+                });
 
-        return () => {
-            clearTimeout(timer);
-            clearTimeout(timer2);
-        };
-    }, []);
-
-    const addNotification = (data: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
-        const newNotif: Notification = {
-            id: Math.random().toString(36).substr(2, 9),
-            timestamp: Date.now(),
-            read: false,
-            ...data
-        };
-        setNotifications(prev => [newNotif, ...prev]);
-        setUnreadCount(prev => prev + 1);
+                const unread = data.notifications.filter((n: Notification) => !n.read).length;
+                setUnreadCount(unread);
+            }
+        } catch (e) {
+            console.error(e);
+        }
     };
 
-    const markAllRead = () => {
-        setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-        setUnreadCount(0);
+    // Initial load and Polling
+    useEffect(() => {
+        fetchNotifications(true); // Initial fetch
+
+        const interval = setInterval(() => {
+            fetchNotifications(true);
+        }, 10000); // 10 seconds poll
+
+        return () => clearInterval(interval);
+    }, []);
+
+    const markAllRead = async () => {
+        try {
+            // Optimistic update
+            setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+            setUnreadCount(0);
+
+            await fetch('/api/notifications/read', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ all: true })
+            });
+        } catch (e) {
+            console.error('Failed to mark read', e);
+        }
     };
 
     const toggleOpen = () => {
@@ -139,11 +150,11 @@ export default function NotificationCenter() {
                 )}
             </AnimatePresence>
 
-            {/* Toast Alerts (Bottom Right) */}
+            {/* Toast Alerts (Recent Unread, < 10s old) */}
             <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none">
                 <AnimatePresence>
                     {notifications.slice(0, 3).map((notif) => (
-                        !notif.read && Date.now() - notif.timestamp < 5000 && (
+                        !notif.read && (Date.now() - notif.timestamp < 10000) && (
                             <motion.div
                                 key={`toast-${notif.id}`}
                                 initial={{ opacity: 0, x: 50 }}

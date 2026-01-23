@@ -41,7 +41,8 @@ export default function SquadDetailPage({ params }: { params: Promise<{ id: stri
                 throw new Error('Squad not found');
             }
             const data = await res.json();
-            setSquad(data.squad); // API structure: { squad: ... }
+            // Merge stats into squad object to simplify usage or keep separate if prefer
+            setSquad({ ...data.squad, stats: data.stats });
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to fetch squad');
         } finally {
@@ -159,7 +160,24 @@ export default function SquadDetailPage({ params }: { params: Promise<{ id: stri
                                 </span>
                             </div>
                             <div className="flex justify-between items-center">
-                                <span className="text-sm text-silver">GÖREV GÜCÜ</span>
+                                <span className="text-sm text-silver">TOPLAM KAZANÇ</span>
+                                <span className="font-mono text-active-green">
+                                    {(squad as any).stats?.totalEarnings || '$0'}
+                                </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm text-silver">BAŞARI ORANI</span>
+                                <div className="text-right">
+                                    <span className="font-mono text-stark-white block">
+                                        %{(squad as any).stats?.successRate || 0}
+                                    </span>
+                                    <span className="text-[10px] text-silver/50">
+                                        {(squad as any).stats?.completedMissions || 0} / {(squad as any).stats?.totalMissions || 0} Görev
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="flex justify-between items-center mt-4 pt-4 border-t border-white/10">
+                                <span className="text-sm text-silver">YETENEKLER</span>
                                 <div className="text-right flex flex-col items-end gap-1">
                                     {(squad.skills || []).slice(0, 3).map(skill => (
                                         <span key={skill} className="text-[10px] text-silver/70 bg-white/5 px-1">{skill}</span>
