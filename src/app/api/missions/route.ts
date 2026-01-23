@@ -36,24 +36,13 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { title, description, requirements, duration, compensation, requiredSquadSize, tags, remote, deadline } = body;
 
-        // Validation
-        if (!title || title.length < 5) {
-            return NextResponse.json({ error: 'Title must be at least 5 characters' }, { status: 400 });
+        // Validate and sanitize input
+        const validation = await validateBody(createMissionSchema, body);
+        if (!validation.success) {
+            return NextResponse.json({ error: validation.error }, { status: 400 });
         }
-
-        if (!description || description.length < 20) {
-            return NextResponse.json({ error: 'Description must be at least 20 characters' }, { status: 400 });
-        }
-
-        if (!duration) {
-            return NextResponse.json({ error: 'Duration is required' }, { status: 400 });
-        }
-
-        if (!compensation) {
-            return NextResponse.json({ error: 'Compensation is required' }, { status: 400 });
-        }
+        const { title, description, requirements, duration, compensation, requiredSquadSize, tags, remote, deadline } = validation.data;
 
         // Create mission
         const mission = await MissionRegistry.createMission({
@@ -64,7 +53,7 @@ export async function POST(req: NextRequest) {
             compensation,
             requiredSquadSize,
             status: 'open',
-            tags,
+            tags: tags || [],
             remote: remote ?? true,
             deadline: deadline ? new Date(deadline).getTime() : undefined,
         });
