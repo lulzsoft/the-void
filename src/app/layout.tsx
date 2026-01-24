@@ -4,6 +4,7 @@ import "./globals.css";
 import GhostLayer from '@/components/GhostLayer';
 import UrlMasker from '@/components/UrlMasker';
 import NotificationCenter from '@/components/NotificationCenter';
+import GlobalHUD from '@/components/ui/GlobalHUD';
 import { Suspense } from 'react';
 
 const bodoniModa = Bodoni_Moda({
@@ -79,7 +80,9 @@ export default function RootLayout({
           <NotificationCenter />
           <UrlMasker />
         </Suspense>
-        {children}
+        <GlobalHUD>
+          {children}
+        </GlobalHUD>
       </body>
     </html>
   );

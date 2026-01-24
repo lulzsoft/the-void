@@ -7,26 +7,27 @@ import TypewriterText from '@/components/ui/TypewriterText';
 import HoloCard from '@/components/ui/HoloCard';
 import GlitchButton from '@/components/ui/GlitchButton';
 import SubliminalAudio from '@/components/audio/SubliminalAudio';
+import StatusDashboard from '@/components/ui/StatusDashboard';
 import { useHeartbeat } from '@/hooks/use-heartbeat';
 import { usePublicStats } from '@/hooks/use-public-stats';
 
 // System Modules (Navigation)
 const modules = [
-  { id: 'initiation', label: 'BAŞVURU', sub: 'Protokol Başlat', href: '/initiation', icon: '⚡' },
-  { id: 'login', label: 'GİRİŞ', sub: 'Personel Erişimi', href: '/login', icon: '🔓' },
-  { id: 'squads', label: 'OPERASYONLAR', sub: 'Aktif Ekipler', href: '/squads', icon: '⚔️' },
-  { id: 'manifesto', label: 'VERTİGO', sub: 'Sistem Manifestosu', href: '/manifesto', icon: '👁️' },
+  { id: 'initiation', label: 'BAŞVURU', sub: 'PROTOKOL_BAŞLAT', href: '/initiation', icon: '⚡' },
+  { id: 'login', label: 'GİRİŞ', sub: 'PERSONEL_ERİŞİMİ', href: '/login', icon: '🔓' },
+  { id: 'squads', label: 'OPERASYONLAR', sub: 'AKTİF_EKİPLER', href: '/squads', icon: '⚔️' },
+  { id: 'manifesto', label: 'VERTİGO', sub: 'SİSTEM_MANIFESTOSU', href: '/manifesto', icon: '👁️' },
 ];
 
 export default function Home() {
   useHeartbeat();
-  const { stats, loading: statsLoading } = usePublicStats();
+  const { stats } = usePublicStats();
   const [booted, setBooted] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(false);
 
   useEffect(() => {
-    // Simulate BIOS boot sequence
-    const timer = setTimeout(() => setBooted(true), 2500);
+    // Faster boot sequence for the pro feel
+    const timer = setTimeout(() => setBooted(true), 1500);
     return () => clearTimeout(timer);
   }, []);
 
@@ -35,126 +36,77 @@ export default function Home() {
   };
 
   return (
-    <main
-      className="relative min-h-screen overflow-hidden bg-void-black text-stark-white cursor-crosshair selection:bg-deep-crimson selection:text-white"
+    <div
+      className="relative min-h-screen p-6 md:p-8 flex flex-col gap-8"
       onClick={handleInteraction}
     >
-      {/* 1. LAYER: Background Atmosphere */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-abyssal-blue via-void-black to-void-black" />
-        <div className="absolute inset-0 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] bg-repeat" />
-        <div className="scanlines" />
+      {/* 1. Dashboard Area */}
+      <section className="w-full max-w-7xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1 }}
+        >
+          <StatusDashboard />
+        </motion.div>
+      </section>
 
-        {/* Ambient Glows */}
-        <div className="absolute top-[-20%] left-[-10%] w-[50vw] h-[50vw] bg-deep-crimson/10 blur-[120px] rounded-full mix-blend-screen animate-float" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] bg-abyssal-blue/20 blur-[150px] rounded-full mix-blend-screen animate-float-delayed" />
-      </div>
+      {/* 2. Main Title (Integrated) */}
+      <section className="w-full max-w-7xl mx-auto flex items-center gap-4 py-8">
+        <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-white/10" />
+        <h1 className="font-display text-4xl md:text-6xl text-stark-white tracking-tighter opacity-80">
+          <TypewriterText text="BOŞLUK" mode="decoding" speed={150} />
+        </h1>
+        <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-white/10" />
+      </section>
 
-      {/* 2. LAYER: UI Grid */}
-      <div className="relative z-10 min-h-screen flex flex-col p-6 md:p-12">
+      {/* 3. Navigation Grid (The "Dock") */}
+      <section className="w-full max-w-7xl mx-auto flex-1 flex items-center">
+        <AnimatePresence>
+          {booted && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+              {modules.map((mod, i) => (
+                <Link href={mod.href} key={mod.id} className="block group">
+                  <HoloCard
+                    delay={i * 0.1}
+                    className="h-full min-h-[180px] flex flex-col justify-between p-6 transition-transform duration-300"
+                  >
+                    <div className="flex justify-between items-start">
+                      <span className="text-3xl opacity-50 group-hover:opacity-100 group-hover:text-tech-cyan group-hover:drop-shadow-[0_0_10px_rgba(0,240,255,0.5)] transition-all duration-300">
+                        {mod.icon}
+                      </span>
+                      <span className="font-mono text-[10px] text-silver/20 border border-silver/10 px-1.5 py-0.5 rounded">
+                        MOD_0{i + 1}
+                      </span>
+                    </div>
 
-        {/* Header / StatusBar */}
-        <header className="flex justify-between items-start mb-12">
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 bg-active-green rounded-full animate-pulse" />
-              <span className="font-mono text-xs text-silver/50 tracking-widest">SİSTEM ÇEVRİMİÇİ</span>
+                    <div>
+                      <h3 className="font-display text-xl text-stark-white tracking-wide mb-1 group-hover:text-tech-cyan transition-colors">
+                        {mod.label}
+                      </h3>
+                      <p className="font-mono text-[10px] text-silver/50 group-hover:text-silver/80 tracking-widest uppercase">
+                        {mod.sub}
+                      </p>
+                    </div>
+
+                    {/* Corner Decoration */}
+                    <div className="absolute top-0 right-0 w-4 h-4 border-t border-r border-white/10 group-hover:border-tech-cyan/50 transition-colors" />
+                    <div className="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-white/10 group-hover:border-tech-cyan/50 transition-colors" />
+
+                    {/* Hover visual */}
+                    <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity translate-x-2 group-hover:translate-x-0 duration-300">
+                      <span className="text-tech-cyan text-xs font-mono">{'>'} ACCESS</span>
+                    </div>
+                  </HoloCard>
+                </Link>
+              ))}
             </div>
-            <div className="font-mono text-[10px] text-silver/30">
-              V.3.0.1_ABYSS // {new Date().toLocaleTimeString('tr-TR')}
-            </div>
-          </div>
+          )}
+        </AnimatePresence>
+      </section>
 
-          <div className="text-right">
-            <div className="font-mono text-xs text-deep-crimson tracking-wider mb-1">
-              CANLI VERİ AKIŞI
-            </div>
-            <div className="font-mono text-[10px] text-silver/50">
-              AJANLAR: {statsLoading ? '...' : (stats?.members.total || 0)} // AKTİF: {statsLoading ? '...' : (stats?.members.active || 0)}
-            </div>
-          </div>
-        </header>
-
-        {/* Main Content Area */}
-        <div className="flex-1 flex flex-col items-center justify-center relative">
-
-          {/* Massive Title */}
-          <div className="relative mb-16 md:mb-24 text-center z-20 mix-blend-overlay">
-            <h1 className="font-display text-[15vw] leading-none text-transparent bg-clip-text bg-gradient-to-b from-stark-white to-transparent opacity-80 select-none">
-              <TypewriterText
-                text="BOŞLUK"
-                mode="decoding"
-                speed={100}
-                className="tracking-tighter"
-              />
-            </h1>
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: "100%" }}
-              transition={{ delay: 1, duration: 1.5 }}
-              className="h-[1px] bg-gradient-to-r from-transparent via-deep-crimson to-transparent w-full mt-4"
-            />
-          </div>
-
-          {/* Navigation Grid (The "Dock") */}
-          <AnimatePresence>
-            {booted && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-6xl">
-                {modules.map((mod, i) => (
-                  <Link href={mod.href} key={mod.id} className="block group">
-                    <HoloCard
-                      delay={i * 0.1}
-                      className="h-full min-h-[160px] flex flex-col justify-between p-6 transition-transform duration-300"
-                    >
-                      <div className="flex justify-between items-start">
-                        <span className="text-2xl opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300">
-                          {mod.icon}
-                        </span>
-                        <span className="font-mono text-[10px] text-silver/20 border border-silver/10 px-1 rounded">
-                          0{i + 1}
-                        </span>
-                      </div>
-
-                      <div>
-                        <h3 className="font-mono text-xl text-stark-white tracking-wider mb-1 group-hover:text-deep-crimson transition-colors">
-                          {mod.label}
-                        </h3>
-                        <p className="font-mono text-xs text-silver/50 group-hover:text-silver/80">
-                          {mod.sub}
-                        </p>
-                      </div>
-
-                      {/* Hover visual */}
-                      <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <span className="text-deep-crimson text-xs">→</span>
-                      </div>
-                    </HoloCard>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </AnimatePresence>
-
-        </div>
-
-        {/* Footer Status */}
-        <footer className="mt-12 md:mt-0 flex justify-between items-end border-t border-white/5 pt-6">
-          <div className="max-w-md">
-            <p className="font-mono text-[10px] text-silver/30 leading-relaxed max-w-xs">
-              UYARI: BU ARAYÜZ SİNİRSEL AĞLARA DOĞRUDAN BAĞLANIR.
-              SÜREKLİ MARUZ KALMAK GERÇEKLİK ALGISINDA BOZULMALARA YOL AÇABİLİR.
-            </p>
-          </div>
-
-          <div className="flex gap-4">
-            <GlitchButton variant="active" className="text-xs py-2 px-4 bg-white/5 hover:bg-white/10" onClick={() => window.open('https://github.com/gemini-void', '_blank')}>
-              GITHUB_ERİŞİMİ
-            </GlitchButton>
-          </div>
-        </footer>
-      </div>
-
+      {/* Audio Engine */}
       <SubliminalAudio enabled={audioEnabled} volume={0.05} />
-    </main>
+    </div>
   );
 }

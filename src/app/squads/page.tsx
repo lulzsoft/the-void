@@ -4,150 +4,109 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import type { Squad } from '@/types/squad';
+import { HexGrid, HexItem } from '@/components/ui/HexGrid';
+import HunterButton from '@/components/ui/HunterButton';
 
 export default function SquadsPage() {
     const router = useRouter();
     const [squads, setSquads] = useState<Squad[]>([]);
-    const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<'all' | 'recruiting' | 'full'>('all');
 
     useEffect(() => {
+        // Mock Data for Visual Dev if API fails or is empty, but let's try fetch first
         fetchSquads();
     }, [filter]);
 
     const fetchSquads = async () => {
-        setLoading(true);
         try {
             const url = filter === 'all' ? '/api/squads' : `/api/squads?status=${filter}`;
             const res = await fetch(url);
             const data = await res.json();
+            // If empty, maybe show mock?
             setSquads(data.squads || []);
         } catch (error) {
             console.error('Failed to fetch squads:', error);
-        } finally {
-            setLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen bg-void-black text-stark-white font-mono p-4 md:p-6">
-            {/* Header */}
-            <div className="max-w-6xl mx-auto mb-8">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                    <div>
-                        <h1 className="font-display text-3xl md:text-6xl tracking-wider mb-2">SQUAD'LAR</h1>
-                        <p className="text-silver/60 text-xs md:text-sm">Kolektiflere katıl veya kendi grubunu kur</p>
-                    </div>
-                    <button
-                        onClick={() => router.push('/squads/create')}
-                        className="w-full md:w-auto bg-deep-crimson hover:bg-deep-crimson/80 text-stark-white px-6 py-3 text-xs tracking-widest transition-colors text-center"
-                    >
-                        + YENİ SQUAD OLUŞTUR
-                    </button>
-                </div>
+        <div className="min-h-screen bg-void-black text-stark-white p-8 relative overflow-hidden">
+            {/* Background Map Texture */}
+            <div className="absolute inset-0 opacity-[0.05] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] bg-cover" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] border border-white/5 rounded-full opacity-20 pointer-events-none" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-white/5 rounded-full opacity-20 pointer-events-none border-dashed" />
 
-                {/* Filters */}
-                <div className="flex overflow-x-auto pb-4 gap-2 md:gap-4 border-b border-white/10 no-scrollbar">
-                    {(['all', 'recruiting', 'full'] as const).map((f) => (
-                        <button
-                            key={f}
-                            onClick={() => setFilter(f)}
-                            className={`text-xs tracking-widest px-4 py-2 transition-colors whitespace-nowrap ${filter === f
-                                ? 'text-deep-crimson border-b-2 border-deep-crimson'
-                                : 'text-silver/50 hover:text-silver'
-                                }`}
-                        >
-                            {f === 'all' ? 'TÜMÜ' : f === 'recruiting' ? 'AÇIK' : 'DOLU'}
-                        </button>
-                    ))}
+            {/* Header */}
+            <div className="relative z-10 flex flex-col items-center mb-12 text-center">
+                <h1 className="font-display text-5xl md:text-7xl tracking-tighter text-stark-white mb-4">TACTICAL_UNITS</h1>
+                <div className="flex gap-4">
+                    <FilterButton active={filter === 'all'} label="ALL_UNITS" onClick={() => setFilter('all')} />
+                    <FilterButton active={filter === 'recruiting'} label="RECRUITING" onClick={() => setFilter('recruiting')} />
+                    <FilterButton active={filter === 'full'} label="FULL_SQUAD" onClick={() => setFilter('full')} />
                 </div>
             </div>
 
-            {/* Squad Grid */}
-            <div className="max-w-6xl mx-auto">
-                {loading ? (
-                    <p className="text-center text-silver/50">Yükleniyor...</p>
-                ) : squads.length === 0 ? (
-                    <div className="text-center py-12">
-                        <p className="text-silver/50 mb-4">Henüz squad yok</p>
-                        <button
-                            onClick={() => router.push('/squads/create')}
-                            className="text-deep-crimson hover:underline text-sm"
-                        >
-                            İlk squad'ı sen oluştur →
-                        </button>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {squads.map((squad) => (
-                            <SquadCard key={squad.id} squad={squad} />
-                        ))}
-                    </div>
-                )}
+            {/* Hex Grid Deployment */}
+            <div className="relative z-10">
+                <HexGrid>
+                    {/* Create New Unit Hex */}
+                    <HexItem onClick={() => router.push('/squads/create')} className="border-2 border-dashed border-white/20 hover:border-tech-cyan">
+                        <div className="text-4xl text-white/20 mb-2 group-hover:text-tech-cyan transition-colors">+</div>
+                        <div className="font-mono text-xs text-white/40 tracking-widest uppercase">DEPLOY NEW UNIT</div>
+                    </HexItem>
+
+                    {squads.map((squad) => (
+                        <HexItem key={squad.id} onClick={() => router.push(`/squads/${squad.id}`)}>
+                            <div className="flex flex-col items-center gap-2">
+                                {/* Leader/Avatar Placeholder */}
+                                <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center mb-2 overflow-hidden border border-white/20">
+                                    <span className="font-display text-xl">{squad.name.substring(0, 2).toUpperCase()}</span>
+                                </div>
+
+                                <h3 className="font-display text-lg tracking-wide text-stark-white group-hover:text-tech-cyan transition-colors">
+                                    {squad.name}
+                                </h3>
+
+                                <span className={`text-[10px] tracking-[0.2em] px-2 py-0.5 rounded ${getStatusStyle(squad.status)}`}>
+                                    {squad.status.toUpperCase()}
+                                </span>
+
+                                <div className="mt-4 flex gap-4 text-[10px] text-white/40 font-mono">
+                                    <div className="flex flex-col items-center">
+                                        <span className="text-lg text-white">{squad.members.length}/{squad.maxMembers}</span>
+                                        <span>MEMBERS</span>
+                                    </div>
+                                    <div className="w-[1px] h-full bg-white/10" />
+                                    <div className="flex flex-col items-center">
+                                        <span className="text-lg text-white">{squad.level || 1}</span>
+                                        <span>LEVEL</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </HexItem>
+                    ))}
+                </HexGrid>
             </div>
         </div>
     );
 }
 
-function SquadCard({ squad }: { squad: Squad }) {
-    const router = useRouter();
-
-    const statusColor = {
-        recruiting: 'text-active-green',
-        full: 'text-silver/50',
-        active: 'text-deep-crimson',
-        disbanded: 'text-silver/30',
-    }[squad.status];
-
+function FilterButton({ active, label, onClick }: { active: boolean, label: string, onClick: () => void }) {
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            onClick={() => router.push(`/squads/${squad.id}`)}
-            className="border border-white/10 hover:border-deep-crimson/50 bg-white/5 p-6 cursor-pointer transition-all group"
+        <button
+            onClick={onClick}
+            className={`
+                px-4 py-2 font-mono text-[10px] tracking-[0.2em] uppercase border transition-all
+                ${active ? 'bg-tech-cyan/20 text-tech-cyan border-tech-cyan/50' : 'bg-transparent text-white/30 border-white/10 hover:border-white/30'}
+            `}
         >
-            {/* Header */}
-            <div className="flex justify-between items-start mb-4">
-                <div className="flex-1">
-                    <h3 className="font-display text-xl text-stark-white group-hover:text-deep-crimson transition-colors">
-                        {squad.name}
-                    </h3>
-                    <p className="text-xs text-silver/50">by {squad.leader}</p>
-                </div>
-                <div className={`text-xs ${statusColor}`}>
-                    {squad.status === 'recruiting' ? '🟢' : squad.status === 'full' ? '🟡' : '🔴'}
-                </div>
-            </div>
-
-            {/* Description */}
-            <p className="text-sm text-silver/70 mb-4 line-clamp-2">{squad.description}</p>
-
-            {/* Members */}
-            <div className="flex items-center gap-2 text-xs text-silver/50 mb-3">
-                <span>👥</span>
-                <span>
-                    {squad.members.length}/{squad.maxMembers}
-                </span>
-            </div>
-
-            {/* Skills */}
-            {squad.skills && squad.skills.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-3">
-                    {squad.skills.slice(0, 3).map((skill, i) => (
-                        <span key={i} className="text-xs bg-deep-crimson/20 text-deep-crimson px-2 py-1">
-                            {skill}
-                        </span>
-                    ))}
-                    {squad.skills.length > 3 && (
-                        <span className="text-xs text-silver/50">+{squad.skills.length - 3}</span>
-                    )}
-                </div>
-            )}
-
-            {/* CTA */}
-            <div className="text-xs text-silver/40 group-hover:text-deep-crimson transition-colors">
-                DETAYLARI GÖR →
-            </div>
-        </motion.div>
+            {label}
+        </button>
     );
+}
+
+function getStatusStyle(status: string) {
+    if (status === 'recruiting') return 'bg-active-green/20 text-active-green';
+    if (status === 'full') return 'bg-alert-amber/20 text-alert-amber';
+    return 'bg-white/10 text-white/30';
 }

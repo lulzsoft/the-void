@@ -2,129 +2,36 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useParams } from 'next/navigation';
-
-// Holografik Kimlik Kartı Bileşeni
-function IdentityCard({ profile }: { profile: any }) {
-    if (!profile) return null;
-
-    return (
-        <div className="relative group perspective-1000">
-            {/* Hologram Efekti */}
-            <div className="absolute -inset-1 bg-gradient-to-r from-deep-crimson via-purple-500 to-blue-500 rounded-xl opacity-20 group-hover:opacity-40 blur transition duration-500 group-hover:duration-200" />
-
-            <div className="relative bg-void-black border border-white/10 p-8 rounded-xl overflow-hidden backdrop-blur-sm">
-                {/* Scanline Animasyonu */}
-                <div className="absolute inset-0 bg-scanline opacity-10 pointer-events-none" />
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-deep-crimson/5 to-transparent translate-y-[-100%] animate-scan pointer-events-none" />
-
-                {/* Üst Kısım: Avatar ve Temel Bilgi */}
-                <div className="flex flex-col md:flex-row items-center gap-8 mb-8">
-                    {/* Avatar Çerçevesi */}
-                    <div className="relative w-32 h-32 flex-shrink-0">
-                        <div className="absolute inset-0 border-2 border-deep-crimson rounded-full animate-spin-slow opacity-50" style={{ borderStyle: 'dashed' }} />
-                        <div className="absolute inset-2 border border-white/30 rounded-full" />
-                        <div className="absolute inset-0 flex items-center justify-center font-display text-4xl text-stark-white bg-white/5 rounded-full overflow-hidden">
-                            {profile.codename?.substring(0, 2).toUpperCase()}
-                        </div>
-                        <div className="absolute bottom-0 right-0 bg-deep-crimson text-white text-[10px] px-2 py-1 rounded-full font-mono tracking-widest">
-                            LVL {Math.floor(Math.random() * 10) + 1}
-                        </div>
-                    </div>
-
-                    {/* İsim ve Rütbe */}
-                    <div className="text-center md:text-left flex-1">
-                        <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
-                            <h1 className="font-display text-4xl md:text-5xl text-stark-white tracking-wider">
-                                {profile.codename}
-                            </h1>
-                            <span className="w-2 h-2 bg-active-green rounded-full animate-pulse" title="Online" />
-                        </div>
-                        <p className="font-mono text-deep-crimson tracking-[0.3em] text-sm mb-4">
-                            {profile.role === 'admin' ? 'SİSTEM YÖNETİCİSİ' : 'SAHA AJANI'}
-                        </p>
-
-                        {/* Statlar */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div className="bg-white/5 p-2 rounded border border-white/5">
-                                <div className="text-[10px] text-silver/50 font-mono">GÖREVLER</div>
-                                <div className="text-xl text-stark-white font-display">12</div>
-                            </div>
-                            <div className="bg-white/5 p-2 rounded border border-white/5">
-                                <div className="text-[10px] text-silver/50 font-mono">BAŞARI</div>
-                                <div className="text-xl text-active-green font-display">94%</div>
-                            </div>
-                            <div className="bg-white/5 p-2 rounded border border-white/5">
-                                <div className="text-[10px] text-silver/50 font-mono">REPUTATION</div>
-                                <div className="text-xl text-purple-400 font-display">850</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Alt Kısım: Detaylar */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-white/10 pt-8">
-                    {/* Yetenekler */}
-                    <div>
-                        <h3 className="font-mono text-xs text-silver/50 tracking-widest mb-4 flex items-center gap-2">
-                            <span className="w-1 h-3 bg-deep-crimson" /> YETENEK MATRİSİ
-                        </h3>
-                        <div className="flex flex-wrap gap-2">
-                            {profile.skills?.split(',').map((skill: string, i: number) => (
-                                <span key={i} className="px-3 py-1 bg-white/5 border border-white/10 text-xs text-silver hover:border-deep-crimson/50 hover:text-white transition-colors cursor-default">
-                                    {skill.trim()}
-                                </span>
-                            )) || <span className="text-silver/30 text-xs text-mono">Veri yok...</span>}
-                        </div>
-                    </div>
-
-                    {/* Bio / Log */}
-                    <div>
-                        <h3 className="font-mono text-xs text-silver/50 tracking-widest mb-4 flex items-center gap-2">
-                            <span className="w-1 h-3 bg-deep-crimson" /> SİSTEM KAYITLARI
-                        </h3>
-                        <p className="font-mono text-xs text-silver/70 leading-relaxed">
-                            Ajan sisteme {new Date(profile.createdAt).toLocaleDateString()} tarihinde giriş yaptı.
-                            Son aktivite: {new Date().toLocaleDateString()}.
-                            Dayanıklılık seviyesi: {profile.painTolerance || 'Bilinmiyor'}.
-                            Durum: <span className="text-active-green">{profile.status}</span>
-                        </p>
-                    </div>
-                </div>
-
-                {/* Footer Deco */}
-                <div className="absolute bottom-2 right-4 font-mono text-[10px] text-white/10">
-                    ID: {profile.id?.substring(0, 8).toUpperCase()} // ENC_V2
-                </div>
-            </div>
-        </div>
-    );
-}
+import { useParams, useRouter } from 'next/navigation';
+import IDCard from '@/components/profile/IDCard';
+import RadarChart from '@/components/profile/RadarChart';
+import HUDFrame from '@/components/ui/HUDFrame';
 
 export default function ProfilePage() {
     const params = useParams();
+    const router = useRouter();
     const [profile, setProfile] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Gerçek API'den veri çekmece
-        // Not: Şu an sadece mock data veya kendi profilimizi çekebiliriz.
-        // İleride /api/users/[username] endpoint'i gerekecek.
-        // Hızlı gösterim için şimdilik 'initiation' verilerinden veya mock'tan beslenelim.
-
         const fetchProfile = async () => {
-            // Simule edilmiş veri (Backend entegrasyonu sonraki adımda yapılabilir)
-            // Gerçekte: await fetch(`/api/users/${params.username}`)
+            // Mock Data Simulation
             setTimeout(() => {
                 setProfile({
-                    id: 'usr_' + Math.random().toString(36).substr(2, 9),
-                    codename: decodeURIComponent(params.username as string),
-                    role: 'user',
+                    id: 'OP-' + Math.random().toString(36).substr(2, 6).toUpperCase(),
+                    codename: decodeURIComponent(params.username as string).toUpperCase(),
+                    role: 'FIELD OPERATIVE',
                     status: 'ACTIVE',
                     createdAt: Date.now() - 10000000,
-                    skills: 'React, Next.js, Cyber Security, UI Design',
-                    painTolerance: 'Yüksek',
-                    xp: 1250 // Mock XP corresponding to Elite
+                    painTolerance: 'HIGH',
+                    xp: 1250,
+                    stats: {
+                        "TACTICS": 85,
+                        "STEALTH": 60,
+                        "INTEL": 92,
+                        "TECH": 78,
+                        "COMBAT": 45
+                    }
                 });
                 setLoading(false);
             }, 1000);
@@ -134,36 +41,114 @@ export default function ProfilePage() {
     }, [params.username]);
 
     return (
-        <div className="min-h-screen bg-void-black text-stark-white p-4 md:p-8 flex items-center justify-center">
-            <div className="w-full max-w-4xl space-y-8">
-                {/* Header Nav */}
-                <div className="flex justify-between items-center mb-12">
-                    <a href="/" className="font-mono text-xs text-silver/50 hover:text-silver transition-colors">
-                        ← ANA ÜS'SE DÖN
-                    </a>
-                    <div className="font-mono text-xs text-deep-crimson tracking-widest opacity-50">
-                        PERSONEL DOSYASI
-                    </div>
-                </div>
+        <div className="min-h-screen p-4 md:p-8 flex items-center justify-center relative">
+            {/* Background elements */}
+            <div className="fixed inset-0 pointer-events-none">
+                <div className="absolute top-1/2 left-0 w-full h-[1px] bg-white/5" />
+                <div className="absolute top-0 left-1/2 w-[1px] h-full bg-white/5" />
+            </div>
+
+            <div className="w-full max-w-5xl relative z-10">
+                {/* Back Nav */}
+                <button
+                    onClick={() => router.push('/')}
+                    className="mb-8 font-mono text-[10px] text-white/40 hover:text-white transition-colors flex items-center gap-2"
+                >
+                    <span>{'<'}</span> RETURN TO BASE
+                </button>
 
                 {loading ? (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="text-center font-mono text-silver/50"
-                    >
-                        DOSYA ŞİFRESİ ÇÖZÜLÜYOR...
-                    </motion.div>
+                    <div className="text-center font-mono text-xs text-silver/50 animate-pulse">
+                        DECRYPTING PERSONNEL FILE...
+                    </div>
                 ) : (
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.5 }}
+                        className="grid grid-cols-1 md:grid-cols-12 gap-8"
                     >
-                        <IdentityCard profile={profile} />
+                        {/* LEFT COLUMN: ID Card & Core Info */}
+                        <div className="md:col-span-5 space-y-8">
+                            <IDCard profile={profile} />
+
+                            <HUDFrame cornerLabel="BIO_METRICS" status="neutral">
+                                <div className="p-6 space-y-4">
+                                    <BioRow label="HEART_RATE" value="62 BPM" />
+                                    <BioRow label="CORTISOL" value="NORMAL" />
+                                    <BioRow label="NEURAL_SYNC" value="98.4%" color="text-active-green" />
+                                    <div className="pt-4 border-t border-white/5">
+                                        <p className="font-mono text-[9px] text-white/30 leading-relaxed">
+                                            Subject displays exceptional cognitive stability under pressure. Recommended for high-risk surveillance operations.
+                                        </p>
+                                    </div>
+                                </div>
+                            </HUDFrame>
+                        </div>
+
+                        {/* RIGHT COLUMN: Service Record & Stats */}
+                        <div className="md:col-span-7 space-y-8">
+                            {/* Stats Radar */}
+                            <HUDFrame cornerLabel="SKILL_MATRIX" status="active">
+                                <div className="p-8 flex flex-col md:flex-row items-center gap-8">
+                                    <div className="flex-1">
+                                        <RadarChart skills={profile.stats} />
+                                    </div>
+                                    <div className="w-full md:w-32 space-y-2">
+                                        <div className="font-mono text-[9px] text-white/40 mb-2">KEY_METRICS</div>
+                                        {Object.keys(profile.stats).map(key => (
+                                            <div key={key} className="flex justify-between font-mono text-xs">
+                                                <span className="text-white/60">{key.substring(0, 3)}</span>
+                                                <span className="text-tech-cyan">{profile.stats[key]}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </HUDFrame>
+
+                            {/* Achievements / Ribbons */}
+                            <HUDFrame cornerLabel="SERVICE_RECORD" status="neutral">
+                                <div className="p-6">
+                                    <div className="grid grid-cols-4 gap-2">
+                                        {[...Array(8)].map((_, i) => (
+                                            <div key={i} className="h-8 bg-white/5 border border-white/10 relative overflow-hidden group hover:border-white/30 transition-colors" title={`Award #${i + 4902}`}>
+                                                {/* Ribbon patterns stripes */}
+                                                <div className={`absolute inset-0 bg-gradient-to-r ${getRibbonGradient(i)} opacity-80`} />
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="mt-4 font-mono text-[9px] text-white/30 text-right">
+                                        TOTAL COMMENDATIONS: 8
+                                    </div>
+                                </div>
+                            </HUDFrame>
+                        </div>
                     </motion.div>
                 )}
             </div>
         </div>
     );
+}
+
+function BioRow({ label, value, color = "text-stark-white" }: { label: string, value: string, color?: string }) {
+    return (
+        <div className="flex justify-between items-center border-b border-white/5 pb-2 last:border-0 last:pb-0">
+            <span className="font-mono text-[10px] text-white/40 tracking-widest">{label}</span>
+            <span className={`font-mono text-sm ${color}`}>{value}</span>
+        </div>
+    );
+}
+
+function getRibbonGradient(index: number) {
+    const gradients = [
+        'from-blue-900 via-yellow-500 to-blue-900', // Service Medal
+        'from-red-900 via-white to-red-900', // Combat Star
+        'from-green-900 via-black to-green-900', // Ops
+        'from-purple-900 via-gold-500 to-purple-900', // Intel
+        'from-gray-800 via-blue-400 to-gray-800',
+        'from-yellow-700 via-red-500 to-yellow-700',
+        'from-teal-900 via-white to-teal-900',
+        'from-black via-white to-black',
+    ];
+    return gradients[index % gradients.length];
 }
